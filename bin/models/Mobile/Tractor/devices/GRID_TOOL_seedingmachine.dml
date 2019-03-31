@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="Planting" rdd="VIRTUAL" target="BODY" type="HELPER" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="www.simlab.co.kr" creator="SimLab" date="2015/10/6" description="Rice planting machine" email="seanyi@simlab.co.kr"/>
+
+  <specification byte="0" period="0" physics="..\..\..\devices\rDeviceParameter.rdd">
+    <property name="TOOL_OFFSET_R" value="1 0 0 0 1 0 0 0 1"/>
+    <property name="TOOL_OFFSET_r" value="0 2 0"/>
+    <property name="TOOL_TYPE" value="LINE"/>
+    <property name="TOOL_WIDTH" value="6.0"/>
+    <property name="__coordinate_frame__" value="{x:TOOL lateral direction}"/>
+  </specification>
+
+</Device>

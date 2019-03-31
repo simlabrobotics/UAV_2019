@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="" rdd="VIRTUAL" target="BODY" type="ACTUATOR" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="www.wonikrobotics.com" creator="Sean Yi" date="2017/5/26" description="" email="seanyi@wonikrobotics.com"/>
+
+  <specification byte="1" period="1000" physics="..\..\..\devices\rDeviceCombineDrive.rdd">
+    <property name="lateral_resistance" value="0.3"/>
+    <property name="acc_gravity" value="9.8"/>
+    <property name="thread_length" value="1.0"/>
+    <property name="slip_ratio_coef_mean" value="0"/>
+    <property name="slip_ratio_coef_std" value="0.05"/>
+    <property name="wheel_angular_acc_limit" value="10.0"/>
+    <property name="wheel_angular_vel_limit" value="20.0"/>
+    <property name="HMAP_H_max" value="10"/>
+    <property name="HMAP_H_min" value="-10"/>
+    <property name="HMAP_L" value="100"/>
+    <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\100x100.bmp"/>
+    <property name="HMAP_W" value="100"/>
+    <property name="HMAP_NORMAL_WND_SIZE" value="1"/>
+    <property name="__device_frame__" value="{X:moving direction}, {Z:axis of rotation}"/>
+    <property name="front_lwheel" value="flmotor"/>
+    <property name="front_rwheel" value="frmotor"/>
+    <property name="front_wheel_radius" value="0.205"/>
+    <property name="rear_lwheel" value="rlmotor"/>
+    <property name="rear_rwheel" value="rrmotor"/>
+    <property name="rear_wheel_radius" value="0.205"/>
+    <property name="driving_wheel_radius" value="0.205"/>
+    <property name="velocity_threshold_to_apply_slippage" value="0.3"/>
+    <property name="lwheel_velocity_noise_mean" value="0"/>
+    <property name="lwheel_velocity_noise_std" value="0"/>
+    <property name="rwheel_velocity_noise_mean" value="0"/>
+    <property name="rwheel_velocity_noise_std" value="0"/>
+    <property name="deformation_modulus" value="0.0212"/>
+    <property name="internal_shearing_resistance" value="0.3473"/>
+    <property name="mass" value="1500"/>
+    <property name="track_width" value="0.35"/>
+    <property name="track_length" value="1.9"/>
+    <property name="cohesive_modulus_of_terrain_deformation" value="29.76"/>
+    <property name="frictional_modulus_of_terrain_deformation" value="2083"/>
+    <property name="exponent_of_terrain_deformation" value="0.8"/>
+  </specification>
+
+</Device>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<DLL xmlns="http://www.simlab.co.kr/2008/XDL" name="hexapod simple gait" path="rControlHexapodGait.dll" type="USER_CONTROL" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/XDL XDL.xsd">
+
+  <credit address="www.rlab.co.kr" creator="Sean Yi" date="2016/8/3" description="hexapod simple gait controller" email="seanyi@wonikrobotics.com"/>
+
+</DLL>

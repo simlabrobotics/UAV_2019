@@ -1,0 +1,284 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Korean resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+#ifdef _WIN32
+LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
+#pragma code_page(949)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\HeightMapGen.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\HeightMapGen.ico"
+#endif    // Korean resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 277, 85
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About HeightMapGen"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    LTEXT           "HeightMapGen, Version 1.0",IDC_STATIC,55,14,215,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2009 SimLab Co., Ltd. All rights reserved.",IDC_STATIC,55,26,215,8
+    DEFPUSHBUTTON   "OK",IDOK,220,64,50,14,WS_GROUP
+END
+
+IDD_HEIGHTMAPGEN_DIALOG DIALOGEX 0, 0, 519, 252
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Height Map Generator"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CTEXT           "\nHeight Map Generator v2.0\nIt generates a height-map from Perlin noise function.\n\nCopyright 2015 SimLab Co., Ltd. All rights reserved.",IDC_STATIC,7,7,505,51,0,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Generate",IDC_GENERATE_HEIGHTMAP,207,169,96,59
+    RTEXT           "Width :",IDC_STATIC,7,140,51,8
+    RTEXT           "Height :",IDC_STATIC,7,155,51,8
+    LTEXT           "(pixels)",IDC_STATIC,123,155,31,8
+    LTEXT           "(pixels)",IDC_STATIC,123,140,31,8
+    RTEXT           "Interpolator :",IDC_STATIC,7,185,51,8
+    COMBOBOX        IDC_INTERPOLATOR,64,183,133,12,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,235,505,10
+    EDITTEXT        IDC_WIDTH,64,139,45,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HEIGHT,64,153,45,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SAVEAS,64,124,220,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SAVEAS_BROWSE,288,122,15,14
+    RTEXT           "Save As :",IDC_STATIC,7,126,51,8
+    RTEXT           "Persistence :",IDC_STATIC,7,170,51,8
+    COMBOBOX        IDC_PERSISTENCE,64,168,133,12,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Apply Smoothing",IDC_SMOOTHING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,217,69,10
+    CONTROL         "Regular Square",IDC_PIN_RECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,154,65,10
+    RTEXT           "Iteration :",IDC_STATIC,7,200,51,8
+    COMBOBOX        IDC_OCTAVE,64,200,133,12,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "  Height-map file format:\n\n    format : indexed (uncompressed) RGB(DIB) bitmap\n    bits per a pixel : 8 bits\n    pallet : 256 colors\n    minimum resolution : 2 X 2",IDC_STATIC,7,61,296,55,0,WS_EX_CLIENTEDGE
+    LTEXT           "Image",IDC_STATIC_IMAGE,312,61,200,169
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "SimLab Co., Ltd."
+            VALUE "FileDescription", "Height-map generator"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "HeightMapGen.exe"
+            VALUE "LegalCopyright", "(c) 2009 SimLab Co., Ltd.  All rights reserved."
+            VALUE "OriginalFilename", "HeightMapGen.exe"
+            VALUE "ProductName", "Height-map generator"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 270
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+
+    IDD_HEIGHTMAPGEN_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 512
+        VERTGUIDE, 64
+        VERTGUIDE, 123
+        VERTGUIDE, 158
+        VERTGUIDE, 303
+        VERTGUIDE, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 245
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_HEIGHTMAPGEN_DIALOG DLGINIT
+BEGIN
+    IDC_INTERPOLATOR, 0x403, 7, 0
+0x694c, 0x656e, 0x7261, "\000" 
+    IDC_INTERPOLATOR, 0x403, 7, 0
+0x6f43, 0x6973, 0x656e, "\000" 
+    IDC_INTERPOLATOR, 0x403, 6, 0
+0x7543, 0x6962, 0x0063, 
+    IDC_PERSISTENCE, 0x403, 4, 0
+0x2f31, 0x0038, 
+    IDC_PERSISTENCE, 0x403, 4, 0
+0x2f31, 0x0034, 
+    IDC_PERSISTENCE, 0x403, 4, 0
+0x2f31, 0x0032, 
+    IDC_PERSISTENCE, 0x403, 4, 0
+0x2f32, 0x0033, 
+    IDC_PERSISTENCE, 0x403, 4, 0
+0x2f33, 0x0034, 
+    IDC_PERSISTENCE, 0x403, 4, 0
+0x2f37, 0x0038, 
+    IDC_PERSISTENCE, 0x403, 5, 0
+0x2f39, 0x3031, "\000" 
+    IDC_PERSISTENCE, 0x403, 2, 0
+0x0031, 
+    IDC_OCTAVE, 0x403, 2, 0
+0x0031, 
+    IDC_OCTAVE, 0x403, 2, 0
+0x0032, 
+    IDC_OCTAVE, 0x403, 2, 0
+0x0034, 
+    IDC_OCTAVE, 0x403, 2, 0
+0x0036, 
+    IDC_OCTAVE, 0x403, 2, 0
+0x0038, 
+    IDC_OCTAVE, 0x403, 3, 0
+0x3031, "\000" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About HeightMapGen..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\HeightMapGen.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

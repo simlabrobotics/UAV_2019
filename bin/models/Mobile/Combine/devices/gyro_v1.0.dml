@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="GYRO" rdd="VIRTUAL" target="BODY" type="SENSOR" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="www.wonikrobotics.com" creator="Sean Yi" date="2017/5/26" description="" email="seanyi@wonikrobotics.com"/>
+
+  <specification byte="12" period="50000" physics="..\..\..\devices\rDeviceGyro.rdd">
+    <property name="bias" value="0"/>
+    <property name="cov" value="0 0 0 0 0 0 0 0 0"/>
+  </specification>
+
+</Device>

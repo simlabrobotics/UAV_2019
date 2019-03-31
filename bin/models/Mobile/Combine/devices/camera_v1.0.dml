@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="Camera" rdd="VIRTUAL" target="ANYWHERE" type="HELPER" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="www.wonikrobotics.com" creator="Sean Yi" date="2017/5/26" description="" email="seanyi@wonikrobotics.com"/>
+
+  <specification byte="0" graphics="..\..\..\devices\rGraphicsCamera.rgd" period="0" physics="..\..\..\devices\rDeviceCamera.rdd">
+    <property name="__description__" value="{Y:up direction}, {Z:look-at direction}"/>
+  </specification>
+
+</Device>

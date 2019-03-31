@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="" rdd="VIRTUAL" target="BODY" type="ACTUATOR" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="" creator="" date="" description="" email=""/>
+
+  <specification byte="1" period="1000" physics="..\..\..\devices\rDeviceTractorDrive.rdd">
+    <property name="Cf" value="72900"/>
+    <property name="Cr" value="45464"/>
+    <property name="HMAP_H_max" value="10"/>
+    <property name="HMAP_H_min" value="-10"/>
+    <property name="HMAP_L" value="100"/>
+    <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\slope.bmp"/>
+    <property name="HMAP_W" value="100"/>
+    <property name="Iz" value="5933"/>
+    <property name="Lf" value="1.24"/>
+    <property name="Lr" value="0.96"/>
+    <property name="__device_frame__" value="{X:moving direction}, {Z:axis of rotation}"/>
+    <property name="acceleration_limit" value="10"/>
+    <property name="distance_btw_axes" value="2.2004"/>
+    <property name="front_lwheel" value="flmotor"/>
+    <property name="front_radius" value="0.55"/>
+    <property name="front_rwheel" value="frmotor"/>
+    <property name="m" value="3304"/>
+    <property name="rear_lwheel" value="rlmotor"/>
+    <property name="rear_radius" value="0.75"/>
+    <property name="rear_rwheel" value="rrmotor"/>
+    <property name="slip_ratio" value="0.0"/>
+    <property name="steer_limit" value="85"/>
+    <property name="steer_lwheel" value="slmotor"/>
+    <property name="steer_ratio" value="1.0"/>
+    <property name="steer_rwheel" value="srmotor"/>
+    <property name="steer_velocity_limit" value="50"/>
+    <property name="velocity_limit" value="20"/>
+    <property name="velocity_threshold_to_apply_slipage" value="0.3"/>
+  </specification>
+
+</Device>

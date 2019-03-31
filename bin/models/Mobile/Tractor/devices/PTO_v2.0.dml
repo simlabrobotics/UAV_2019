@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="Kinematic motor" rdd="VIRTUAL" target="JOINT" type="ACTUATOR" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="" creator="" date="" description="" email=""/>
+
+  <specification byte="4" period="1000" physics="..\..\..\devices\rDeviceKinematicMotor.rdd">
+    <property name="joint_limit_lower" value="0"/>
+    <property name="joint_limit_upper" value="30"/>
+    <property name="offset" value="0"/>
+    <property name="reduction" value="1"/>
+    <property name="update_adj_kinematics" value="false"/>
+  </specification>
+
+</Device>
