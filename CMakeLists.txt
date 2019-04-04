@@ -1,4 +1,4 @@
-SET( name Combine )
+SET( name UAV )
 SET( RLAB_ROOT_DIR "C:/Program Files (x86)/RLAB" CACHE PATH "Where RLAB is installed?" )
 
 PROJECT( ${name} )

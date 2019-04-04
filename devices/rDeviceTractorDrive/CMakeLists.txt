@@ -1,4 +1,4 @@
-SET( name "rDeviceCombineDrive" )
+SET( name "rDeviceTractorDrive" )
 
 # import 3rdparty 
 SET( RLAB_DEP_LINK_LIBS )
