@@ -3,12 +3,16 @@
 
   <credit address="" creator="" date="" description="" email=""/>
 
-  <specification byte="4" period="1000" physics="..\..\..\devices\rDeviceKinematicMotor.rdd">
+  <specification byte="4" period="1000" physics="..\..\..\devices\rDeviceUAVPTO.rdd">
+    <property name="__desc_joint_limit" value="{degree}"/>
+    <property name="__desc_offset" value="{degree}"/>
+    <property name="__desc_velocity_limit" value="{degree/sec}"/>
     <property name="joint_limit_lower" value="0"/>
     <property name="joint_limit_upper" value="30"/>
     <property name="offset" value="0"/>
     <property name="reduction" value="1"/>
     <property name="update_adj_kinematics" value="false"/>
+    <property name="velocity_limit" value="30"/>
   </specification>
 
 </Device>

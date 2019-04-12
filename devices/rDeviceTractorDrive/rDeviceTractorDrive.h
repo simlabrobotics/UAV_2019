@@ -14,14 +14,14 @@
 namespace rlab {
 namespace plugin {
 
-class rDeviceCombineDrive : public RD_DEVICE_CLASS(Base)
+class rDeviceTractorDrive : public RD_DEVICE_CLASS(Base)
 {
 	RD_VERSION(1.0);
 	RD_AUTHOR(SimLab);
 
 public:
-	RD_DECLARE_CTOR(CombineDrive);
-	RD_DECLARE_DTOR(CombineDrive);
+	RD_DECLARE_CTOR(TractorDrive);
+	RD_DECLARE_DTOR(TractorDrive);
 
 public:
 	RD_DECLARE_createDevice;
@@ -49,96 +49,82 @@ private:
 	rID		_front_rwheel;
 	rID		_rear_lwheel;
 	rID		_rear_rwheel;
+	rID		_steer_lwheel;
+	rID		_steer_rwheel;
 
-	// vehicle kinematics & dynamics
-	float	_thread_length;			// distance between left and right track
+	// tractor kinematics
+	float	_distance_btw_axes;
 	float	_front_wheel_radius;
 	float	_rear_wheel_radius;
-	float	_driving_wheel_radius;	// wheel radius of driving axis
-	float	_mass;					// mass of vehicle
-    float	_track_width;			// track width
-	float	_track_length;			// track width
-	
+
+	// current/desired wheel/steer position
+	float	_front_ltheta;
+	float	_front_rtheta;
+	float	_rear_ltheta;
+	float	_rear_rtheta;
+	float	_steer_ltheta;
+	float	_steer_rtheta;
+
 	// limits
-	float	_w_limit;	// maximum wheel velocity (rad/sec)
-	float	_wdot_limit;// maximum wheel acceleration (rad/sec^2)
-	
-	// desired(commanded) angular velocities of the wheels
-	float	_w_l_des;
-	float	_w_r_des;
+	float	_steer_limit;
+	float	_steer_velocity_limit;
+	float	_velocity_limit;
+	float	_acceleration_limit;
 
-	// current angular velocities of the wheels considering wheel velocity/acceleration limits w/o noise
-	float	_w_l;
-	float	_w_r;
-	// current angular velocities of the wheels considering wheel velocity/acceleration limits with noise
-	float	_w_l_w_noise;
-	float	_w_r_w_noise;
+	// desired(commanded) forward velocity and steer angle
+	float	_v_des;
+	float	_theta_des;
 
-	// current forward & angular velocity w/o slip (wrt vehicle coordinate frame)
-	float	_v_wo_slip;
-	float	_thdot_wo_slip;
-
-	// current forward & angular velocity with slip (wrt vehicle coordinate frame)
+	// current forward velocity and steer angle (wrt vehicle coordinate frame)
 	float	_v;
-	float	_thdot;
+	float	_theta;
 
-	// current pose of tractor (wrt global coordinate frame)
-	float	_gx;		// global position x
-	float	_gy;		// global position y
-	float	_gz;		// global position z
-	float	_gth;		// yaw angle
-	float	_pitch;		// pitch angle
-	float	_roll;		// roll angle
+	// current forward and lateral velocity considering slip (wrt vehicle coordinate frame)
+	float	_vx; // forward(longitudinal) speed
+	float	_vy; // lateral speed
 
-	// current velocity (wrt global coordinate frame)
-	float	_gxdot;
-	float	_gydot;
-	float	_gzdot;
-	float	_gthdot;	// yaw rate
-	float	_gthddot;	// yaw angular acceleration
+				 // current pose of tractor (wrt global coordinate frame)
+	float	_psi;   // yaw angle
+	float	_x;	    // global position x
+	float	_y;	    // global position y
+	float	_z;	    // global position z
+	float	_pitch; // pitch angle
+	float	_roll;  // roll angle
 
-	// initial transform of vehicle
+					// initial transform of tractor
 	float	_r0[3];		// initial axis displacement
 	float	_R0[9];		// initial axis rotation
 
-	// current transformation of tractor
-	float	_R[9]; 
+						// current transformation of tractor
+	float	_R[9];
 	float	_r[3];
 
-	// model parameters to determine the slip angle, slip ratio
-	float	_slip_ratio_mean;	// norm of slip ratio
-	float	_slip_ratio_std;	// standard deviation of slip ratio
-	float	_i_r;				// slip ratio of right wheel
-	float	_i_l;				// slip ratio of left wheel
-	float	_mu_l;				// coefficient of lateral resistance
-	float	_gravity_acc;		// acceleration of gravity
-	float	_alpha;				// slip angle (rad)
-	
-	// minimum velocity to apply slippage
-	float	_v_threshod_to_apply_slippage;
+	// model parameters to determine the slip angle, yaw angle, yaw rate
+	float	_Cf;		// cornering stiffness of front wheels (N/rad)
+	float	_Cr;		// cornering stiffness of rear wheels (N/rad)
+	float	_m;			// mass of the tractor (kg)
+	float	_Iz;		// turning inertia WRT tractor COG (kg m^2)
+	float	_Lf;		// distance from front wheel to tractor COG (m)
+	float	_Lr;		// distance from rear wheel to tractor COG (m)
 
-	// wheel position
-	float	_front_lwheel_theta; // front left wheel position(rad)
-	float	_front_rwheel_theta; // front right wheel position(rad)
-	float	_rear_lwheel_theta; // rear left wheel position(rad)
-	float	_rear_rwheel_theta; // rear right wheel position(rad)
+	float	_beta;		// slip angle of front and rear wheels
+	float	_betadot;	// slip rate
+	float	_betaf;		// slip angle of front wheel
+	float	_betar;		// slip angle of rear wheel
+	float	_Ff;		// lateral force at front wheel
+	float	_Fr;		// lateral force at rear wheel
 
-	// noise parameter
-	float	_w_l_noise_mean;
-	float	_w_l_noise_std;
-	float	_w_r_noise_mean;
-	float	_w_r_noise_std;
+						// current velocity (wrt global coordinate frame)
+	float	_xdot;
+	float	_ydot;
+	float	_zdot;
+	float	_psidot;	// yaw rate
+	float	_psiddot;	// yaw angular acceleration
 
-	// indicators and coefficients to calculate indicators
-	float	_F_r;			// tractive force of left track
-	float	_F_l;			// tractive force of right track
-	float	_z0;			// sinkage
-	float	_Rc;			// motion resistance
-	float	_K;				// deformation modulus
-    float	_pi;			// internal shearing resistance
-    float	_k_c;			// cohesive modulus of terrain deformation
-    float	_k_pi;			// frictional modulus of terrain deformation
-    float	_n;				// exponent of terrain deformation
+	float	_slip_ratio;
+
+	// minimum forward velocity to apply extended bicycle model with lateral vehicle dynamics
+	float	_v_threshod_to_apply_slipage;
 
 	// height map
 	HeightMap _hmap;
