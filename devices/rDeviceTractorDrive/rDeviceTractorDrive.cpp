@@ -203,7 +203,7 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 {
 	switch (port)
 	{
-	case TRACTORDRIVE_DATAPORT_SET_POSE:
+	case UAVDRV_DATAPORT_SET_POSE:
 	{
 		if (len >= 3 * sizeof(float))
 		{
@@ -230,7 +230,7 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-	case TRACTORDRIVE_DATAPORT_SET_VEL_IMMEDIATE:
+	case UAVDRV_DATAPORT_SET_VEL_IMMEDIATE:
 	{
 		if (len >= 2 * sizeof(float))
 		{
@@ -246,8 +246,7 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-	case TRACTORDRIVE_DATAPORT_SET_VEL_TARGET:
-	default:
+	case UAVDRV_DATAPORT_SET_VEL_TARGET:
 	{
 		if (len >= 2 * sizeof(float))
 		{
@@ -261,6 +260,10 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 			return 2 * sizeof(float);
 		}
 	}
+
+	default:
+		// Exception! Unknown command.
+		return 0;
 	}
 
 	return 0;
@@ -270,16 +273,25 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 {
 	switch (port)
 	{
-	case TRACTORDRIVE_MONITORPORT_SLIP_ANGLE:
+	case UAVDRV_MONITORPORT_POSE:
 	{
-		if (len >= 3 * sizeof(float))
+		if (len >= 5 * sizeof(float))
+		{
+			float* value = (float*)buffer;
+			value[0] = _x;
+			value[1] = _y;
+			value[2] = _psi;
+			value[3] = _pitch;
+			value[4] = _roll;
+		}
+		else if (len >= 3 * sizeof(float))
 		{
 			_lock.lock();
 			{
 				float* value = (float*)buffer;
-				value[0] = _beta;
-				value[1] = _betaf;
-				value[2] = _betar;
+				value[0] = _x;
+				value[1] = _y;
+				value[2] = _psi;
 			}
 			_lock.unlock();
 			return 3 * sizeof(float);
@@ -287,23 +299,7 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-	case TRACTORDRIVE_MONITORPORT_LATERAL_FORCE:
-	{
-		if (len >= 2 * sizeof(float))
-		{
-			_lock.lock();
-			{
-				float* value = (float*)buffer;
-				value[0] = _Ff;
-				value[1] = _Fr;
-			}
-			_lock.unlock();
-			return 2 * sizeof(float);
-		}
-	}
-	break;
-
-	case TRACTORDRIVE_MONITORPORT_POSE_LOCAL:
+	case UAVDRV_MONITORPORT_POSE_LOCAL:
 	{
 		if (len >= 3 * sizeof(float))
 		{
@@ -331,7 +327,7 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-	case TRACTORDRIVE_MONITORPORT_VELOCITY:
+	case UAVDRV_MONITORPORT_VELOCITY:
 	{
 		if (len >= 3 * sizeof(float))
 		{
@@ -348,32 +344,42 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-	case TRACTORDRIVE_MONITORPORT_POSE:
-	default:
+	case UAVDRV_MONITORPORT_SLIP_ANGLE:
 	{
-		if (len >= 5 * sizeof(float))
-		{
-			float* value = (float*)buffer;
-			value[0] = _x;
-			value[1] = _y;
-			value[2] = _psi;
-			value[3] = _pitch;
-			value[4] = _roll;
-		}
-		else if (len >= 3 * sizeof(float))
+		if (len >= 3 * sizeof(float))
 		{
 			_lock.lock();
 			{
 				float* value = (float*)buffer;
-				value[0] = _x;
-				value[1] = _y;
-				value[2] = _psi;
+				value[0] = _beta;
+				value[1] = _betaf;
+				value[2] = _betar;
 			}
 			_lock.unlock();
 			return 3 * sizeof(float);
 		}
 	}
 	break;
+
+	case UAVDRV_MONITORPORT_LATERAL_FORCE:
+	{
+		if (len >= 2 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				float* value = (float*)buffer;
+				value[0] = _Ff;
+				value[1] = _Fr;
+			}
+			_lock.unlock();
+			return 2 * sizeof(float);
+		}
+	}
+	break;
+
+	default:
+		// Exception! Unknown data port.
+		return 0;
 	}
 	return 0;
 }

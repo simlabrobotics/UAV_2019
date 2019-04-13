@@ -14,7 +14,7 @@ using namespace rlab;
 using namespace rlab::rxsdk;
 #include "rLabServer.h"
 #include "UAV_protocol.h"
-#include "../../devices/rDeviceCombineDrive/rDeviceCombineDriveCmd.h"
+#include "UAV_cmd.h"
 #include "../common/HeightMap.h"
 extern HeightMap hmap;
 
@@ -220,8 +220,13 @@ void rLabServer::onMessage(int id, kaiMsg &msg)
 			if (NULL != _drive)
 			{
 				float val[3];
-				_drive->monitorDeviceValue(val, sizeof(val), COMBINEDRIVE_MONITORPORT_SLIP_ANGLE);
-				feedback << (float)(val[2]*RADIAN) << (float)(val[0]) << (float)(val[1]);
+				if (0 < _drive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_SLIP_ANGLE))
+					feedback << (float)(val[2]*RADIAN) << (float)(val[0]) << (float)(val[1]);
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil << nil;
+				}
 			}
 			else
 			{
@@ -318,11 +323,21 @@ void rLabServer::onMessage(int id, kaiMsg &msg)
 			{
 				float val[2];
 
-				_drive->monitorDeviceValue(val, sizeof(float)*2, COMBINEDRIVE_MONITORPORT_WHEEL_VELOCITY);
-				feedback << val[0] << val[1];
+				if (0 < _drive->monitorDeviceValue(val, sizeof(float)*2, UAVDRV_MONITORPORT_WHEEL_VELOCITY))
+					feedback << val[0] << val[1];
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil;
+				}
 
-				_drive->monitorDeviceValue(val, sizeof(float)*2, COMBINEDRIVE_MONITORPORT_VELOCITY_LOCAL);
-				feedback << val[0] << val[1];
+				if (0 < _drive->monitorDeviceValue(val, sizeof(float)*2, UAVDRV_MONITORPORT_VELOCITY_LOCAL))
+					feedback << val[0] << val[1];
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil;
+				}
 			}
 			else
 			{
@@ -359,8 +374,13 @@ void rLabServer::onMessage(int id, kaiMsg &msg)
 
 			if (NULL != _drive)
 			{
-				_drive->monitorDeviceValue(&param, sizeof(PARAMETER), COMBINEDRIVE_MONITORPORT_PARAMETER);
-				feedback << param.type << param.param1 << param.param2 << param.param3;
+				if (0 < _drive->monitorDeviceValue(&param, sizeof(PARAMETER), UAVDRV_MONITORPORT_PARAMETER))
+					feedback << param.type << param.param1 << param.param2 << param.param3;
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil << nil << nil;
+				}
 			}
 			else
 			{
@@ -388,14 +408,29 @@ void rLabServer::onMessage(int id, kaiMsg &msg)
 			{
 				float val[2];
 
-				_drive->monitorDeviceValue(val, sizeof(float)*2, COMBINEDRIVE_MONITORPORT_TRACTIVE_FORCE);
-				feedback << val[0] << val[1];
+				if (0 < _drive->monitorDeviceValue(val, sizeof(float)*2, UAVDRV_MONITORPORT_TRACTIVE_FORCE))
+					feedback << val[0] << val[1];
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil << nil << nil;
+				}
 
-				_drive->monitorDeviceValue(val, sizeof(float), COMBINEDRIVE_MONITORPORT_SINKAGE);
-				feedback << val[0];
+				if (0 < _drive->monitorDeviceValue(val, sizeof(float), UAVDRV_MONITORPORT_SINKAGE))
+					feedback << val[0];
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil << nil << nil;
+				}
 
-				_drive->monitorDeviceValue(val, sizeof(float), COMBINEDRIVE_MONITORPORT_MOTION_RESISTANCE);
-				feedback << val[0];
+				if (_drive->monitorDeviceValue(val, sizeof(float), UAVDRV_MONITORPORT_MOTION_RESISTANCE))
+					feedback << val[0];
+				else
+				{
+					float nil(0.0f);
+					feedback << nil << nil << nil << nil;
+				}
 			}
 			else
 			{
@@ -455,7 +490,7 @@ void rLabServer::onAddWaypoint(const WAYPOINT& waypoint)
 			val[1] = waypoint.y;
 			val[2] = waypoint.angle*DEGREE;
 			///val[2] = 0;
-			_drive->writeDeviceValue(val ,sizeof(float)*3, COMBINEDRIVE_DATAPORT_SET_POSE);
+			_drive->writeDeviceValue(val ,sizeof(float)*3, UAVDRV_DATAPORT_SET_POSE);
 		}
 	}
 
@@ -520,7 +555,7 @@ void rLabServer::onSetPose(const POSE2D &pose)
 	val[0] = pose.x;
 	val[1] = pose.y;
 	val[2] = pose.heading*DEGREE;
-	_drive->writeDeviceValue(val ,sizeof(float)*3, COMBINEDRIVE_DATAPORT_SET_POSE);
+	_drive->writeDeviceValue(val ,sizeof(float)*3, UAVDRV_DATAPORT_SET_POSE);
 }
 
 void rLabServer::onMotionState(const MOTIONSTATE &motionstate)
@@ -529,7 +564,7 @@ void rLabServer::onMotionState(const MOTIONSTATE &motionstate)
 	float val[2];
 	val[0] = motionstate.velocity;
 	val[1] = motionstate.heading*DEGREE;
-	_drive->writeDeviceValue(val, sizeof(float)*2, COMBINEDRIVE_DATAPORT_SET_VEL_IMMEDIATE);
+	_drive->writeDeviceValue(val, sizeof(float)*2, UAVDRV_DATAPORT_SET_VEL_IMMEDIATE);
 }
 
 //void rLabServer::upWorker(const UPWORKER &upworker)
@@ -563,7 +598,7 @@ void rLabServer::onMovingPTO(const PTO &pto)
 void rLabServer::onSetParam(const PARAMETER &param)
 {
 	if (NULL == _drive) return;
-	_drive->writeDeviceValue(const_cast<PARAMETER*>(&param), sizeof(PARAMETER), COMBINEDRIVE_DATAPORT_SET_PARAMETER);
+	_drive->writeDeviceValue(const_cast<PARAMETER*>(&param), sizeof(PARAMETER), UAVDRV_DATAPORT_SET_PARAMETER);
 }
 
 //void rLabServer::widthofPTO(const PTOWIDTH &widthpto)
@@ -594,7 +629,7 @@ void rLabServer::onClose(int id)
 			float val[2];
 			val[0] = 0;
 			val[1] = 0;
-			_drive->writeDeviceValue(val, sizeof(float)*2, COMBINEDRIVE_DATAPORT_SET_VEL_IMMEDIATE);
+			_drive->writeDeviceValue(val, sizeof(float)*2, UAVDRV_DATAPORT_SET_VEL_IMMEDIATE);
 		}
 	}
 }

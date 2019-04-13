@@ -21,13 +21,13 @@
 
   <property name="aml_name" value="Tractor"/>
 
-  <property name="aml_path" value="models/Mobile/Tractor/tractor_seedingmachine.aml"/>
+  <property name="aml_path" value="models/Mobile/Tractor/tractor_combine.aml"/>
 
   <property name="aml_q0" value="0"/>
 
   <property name="aml_r0" value="0 0 0.75"/>
 
-  <property name="control_enable" value="false"/>
+  <property name="control_enable" value="true"/>
 
   <property name="control_name" value="MobileController"/>
 

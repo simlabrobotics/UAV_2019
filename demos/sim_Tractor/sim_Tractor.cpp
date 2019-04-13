@@ -18,7 +18,7 @@ using namespace rlab;
 using namespace rlab::rxsdk;
 #include "rLabServer.h"
 #include "UAV_conf.h"
-#include "../../devices/rDeviceCombineDrive/rDeviceCombineDriveCmd.h"
+#include "UAV_cmd.h"
 #include "../common/HeightMap.h"
 
 UAVConf appConf;
@@ -134,7 +134,7 @@ void MyKeyboardHandler(int key, void* data)
 	case VK_SPACE: w_l_des = 0; w_r_des = 0; break;
 
 	case VK_PRIOR: pto_des = (float)(0*DEGREE); break;
-	case VK_NEXT: pto_des = (float)(-15*DEGREE); break;
+	case VK_NEXT: pto_des = (float)(30*DEGREE); break;
 
 	case VK_T:
 		rShowTrace(aml_name, _T("Body"), BLUE);
@@ -256,19 +256,39 @@ void VehicleDataCallback(std::vector<double>& data)
 	float val[5];
 
 	if (appConf.enablePlotPosition()) {
-		carDrive->monitorDeviceValue(val, sizeof(val), COMBINEDRIVE_MONITORPORT_POSE);
-		data.push_back(val[0]);
-		data.push_back(val[1]);
-		data.push_back(val[2]*RADIAN);
-		data.push_back(val[3]*RADIAN);
-		data.push_back(val[4]*RADIAN);
+		if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_POSE))
+		{
+			data.push_back(val[0]);
+			data.push_back(val[1]);
+			data.push_back(val[2] * RADIAN);
+			data.push_back(val[3] * RADIAN);
+			data.push_back(val[4] * RADIAN);
+		}
+		else
+		{
+			float nil(0.0f);
+			data.push_back(nil);
+			data.push_back(nil);
+			data.push_back(nil);
+			data.push_back(nil);
+			data.push_back(nil);
+		}
 	}
 
 	if (appConf.enablePlotVelocity()) {
-		carDrive->monitorDeviceValue(val, sizeof(val), COMBINEDRIVE_MONITORPORT_VELOCITY);
-		data.push_back(val[0]);
-		data.push_back(val[1]);
-		data.push_back(val[2]*RADIAN);
+		if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_VELOCITY))
+		{
+			data.push_back(val[0]);
+			data.push_back(val[1]);
+			data.push_back(val[2] * RADIAN);
+		}
+		else
+		{
+			float nil(0.0f);
+			data.push_back(nil);
+			data.push_back(nil);
+			data.push_back(nil);
+		}
 	}
 }
 
@@ -278,15 +298,33 @@ void SlipDataCallback(std::vector<double>& data)
 	rxDevice* carDrive = sys->findDevice(_T("CarDrive"));
 	if (!carDrive) return;
 	float val[3];
-	carDrive->monitorDeviceValue(val, sizeof(val), COMBINEDRIVE_MONITORPORT_SLIP_ANGLE);
-	data.push_back(val[2]*RADIAN);
-	data.push_back(val[0]);
-	data.push_back(val[1]);
+	if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_SLIP_ANGLE))
+	{
+		data.push_back(val[2] * RADIAN);
+		data.push_back(val[0]);
+		data.push_back(val[1]);
+	}
+	else
+	{
+		float nil(0.0f);
+		data.push_back(nil);
+		data.push_back(nil);
+		data.push_back(nil);
+	}
 	
-	carDrive->monitorDeviceValue(val, sizeof(val), COMBINEDRIVE_MONITORPORT_VELOCITY);
-	data.push_back(val[2]*RADIAN); // angular velocity
-	data.push_back(val[0]);  // v_x_global
-	data.push_back(val[1]);  // v_y_global
+	if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_VELOCITY))
+	{
+		data.push_back(val[2] * RADIAN); // angular velocity
+		data.push_back(val[0]);  // v_x_global
+		data.push_back(val[1]);  // v_y_global
+	}
+	else
+	{
+		float nil(0.0f);
+		data.push_back(nil);
+		data.push_back(nil);
+		data.push_back(nil);
+	}
 }
 
 void SetupDAQ()

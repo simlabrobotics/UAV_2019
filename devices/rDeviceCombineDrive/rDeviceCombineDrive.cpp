@@ -218,7 +218,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 {
 	switch (port)
 	{
-	case COMBINEDRIVE_DATAPORT_SET_POSE: // set instant pose of the vehicle
+	case UAVDRV_DATAPORT_SET_POSE: // set instant pose of the vehicle
 		{
 			if (len >= 3*sizeof(float))
 			{
@@ -247,7 +247,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_DATAPORT_SET_VEL_IMMEDIATE:
+	case UAVDRV_DATAPORT_SET_VEL_IMMEDIATE:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -263,7 +263,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_DATAPORT_SET_MAXIMUM_VEL:
+	case UAVDRV_DATAPORT_SET_MAXIMUM_VEL:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -285,7 +285,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_DATAPORT_SET_PARAMETER:
+	case UAVDRV_DATAPORT_SET_PARAMETER:
 		{
 			if (len >= 4*sizeof(float))
 			{
@@ -358,8 +358,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_DATAPORT_SET_VEL_TARGET: // set velocity command
-	default:
+	case UAVDRV_DATAPORT_SET_VEL_TARGET: // set velocity command
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -373,6 +372,11 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 				return 2*sizeof(float);
 			}
 		}
+		break;
+
+	default:
+		// Exception! Unknown command.
+		return 0;
 	}
 
 	return 0;
@@ -382,7 +386,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 {
 	switch (port)
 	{
-	case COMBINEDRIVE_MONITORPORT_SLIP_ANGLE:
+	case UAVDRV_MONITORPORT_SLIP_ANGLE:
 		{
 			if (len >= 3*sizeof(float))
 			{
@@ -399,7 +403,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_VELOCITY_LOCAL:
+	case UAVDRV_MONITORPORT_VELOCITY_LOCAL:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -415,7 +419,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_VELOCITY_LOCAL_WO_SLIP:
+	case UAVDRV_MONITORPORT_VELOCITY_LOCAL_WO_SLIP:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -431,7 +435,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_VELOCITY:
+	case UAVDRV_MONITORPORT_VELOCITY:
 		{
 			if (len >= 3*sizeof(float))
 			{
@@ -448,7 +452,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_WHEEL_VELOCITY:
+	case UAVDRV_MONITORPORT_WHEEL_VELOCITY:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -464,7 +468,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_WHEEL_VELOCITY_WO_SLIP:
+	case UAVDRV_MONITORPORT_WHEEL_VELOCITY_WO_SLIP:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -480,7 +484,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_TRACTIVE_FORCE:
+	case UAVDRV_MONITORPORT_TRACTIVE_FORCE:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -496,7 +500,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_SINKAGE:
+	case UAVDRV_MONITORPORT_SINKAGE:
 		{
 			if (len >= sizeof(float))
 			{
@@ -511,7 +515,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_MOTION_RESISTANCE:
+	case UAVDRV_MONITORPORT_MOTION_RESISTANCE:
 		{
 			if (len >= sizeof(float))
 			{
@@ -526,7 +530,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_PARAMETER:
+	case UAVDRV_MONITORPORT_PARAMETER:
 		{
 			if (len >= 4*sizeof(float))
 			{
@@ -599,8 +603,7 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case COMBINEDRIVE_MONITORPORT_POSE:
-	default:
+	case UAVDRV_MONITORPORT_POSE:
 		{
 			if (len >= 5*sizeof(float))
 			{
@@ -625,6 +628,10 @@ int rDeviceCombineDrive::monitorDeviceValue(void* buffer, int len, int port)
 			}
 		}
 		break;
+
+	default:
+		// Exception! Unknown data port.
+		return 0;
 	}
 	return 0;
 }

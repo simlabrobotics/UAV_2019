@@ -28,6 +28,7 @@ LIST(APPEND ${name}_EXTRA_SRCS
 	"${CMAKE_SOURCE_DIR}/include/UAV_def.h"
 	"${CMAKE_SOURCE_DIR}/include/UAV_hmap.h"
 	"${CMAKE_SOURCE_DIR}/include/UAV_protocol.h"
+	"${CMAKE_SOURCE_DIR}/include/UAV_cmd.h"
 	"${CMAKE_SOURCE_DIR}/common/HeightMap.h"
 	"${CMAKE_SOURCE_DIR}/common/HeightMap.cpp"
 	"${CMAKE_SOURCE_DIR}/bin/conf_Combine.xdl"
@@ -41,6 +42,7 @@ LIST(APPEND ${name}_EXTRA_SRCS
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/PTO_v2.0.dml"
 	)
 LIST(APPEND ${name}_EXTRA_SRCS_NAME
+	"UAV Header"
 	"UAV Header"
 	"UAV Header"
 	"UAV Header"
