@@ -161,8 +161,8 @@ Set maximum velocity of the vehicle.
 	1: lateral resistance
 	2: gravitational acceleration in m/s^2
 	3: slip ratio mean and std
-	4: maximum wheel angular velocity in m/s
-	5: maximum wheel angular acceleration m/s^2
+	4: maximum wheel angular velocity in rad/s
+	5: maximum wheel angular acceleration rad/s^2
 	6: velocity threshold to apply slippage in m/s
 	7: wheel velocity noise mean and std
 	8: deformation modulus

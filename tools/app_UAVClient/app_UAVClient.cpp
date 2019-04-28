@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
 	printf("\n");
 	printf("\'R\' or \'r\': lift up PTO\n");
 	printf("\'F\' or \'f\': let down PTO\n");
+	printf("\n");
+	printf("\'P\' or \'p\': reset Path\n");
 	printf("---------------------------------------------\n");
 	printf("\'C\' or \'c\': request coverage statistics\n");
 	printf("\'I\' or \'i\': request indicators\n");
@@ -88,6 +90,11 @@ int main(int argc, char *argv[])
 					break;
 				case 'f': case 'F':
 					client.sendMovePTO(1);
+					break;
+
+				// reset path
+				case 'p': case 'P':
+					client.resetPath();
 					break;
 
 				// request coverage data

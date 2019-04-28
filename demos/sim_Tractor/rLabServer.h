@@ -42,6 +42,7 @@ private:
 	rxDevice* _pto; // Power Take Off
 	rxDevice* _grid;
 	rxDevice* _gridTool;
+	rxDevice* _wp;
 	double _dT;
 	DATAFORMAT _msgSend;
 	DATAFORMAT _msgRecv;

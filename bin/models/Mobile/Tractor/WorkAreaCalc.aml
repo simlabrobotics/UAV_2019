@@ -17,6 +17,7 @@
       </shape>
     </render>
     <device R="1 0 0 0 1 0 0 0 1" dml="devices\GRID_v2.0.dml" name="GRID" r="0 0 0"/>
+    <device R="1 0 0 0 1 0 0 0 1" dml="devices\WP_v1.0.dml" name="WP" r="0 0 0"/>
   </body>
 
 </Subsys>

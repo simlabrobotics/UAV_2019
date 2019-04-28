@@ -61,6 +61,10 @@ public:
 		_eml_R0.setIdentity();
 		_aml_R0.setIdentity();
 		_aml_r0.setZero();
+
+		_wp_line_width = 4;
+		_wp_offset_z = 1.0;
+		_wp_line_color[0] = _wp_line_color[1] = _wp_line_color[2] = _wp_line_color[3] = 1.0f;
 	}
 		
 	~UAVConf() {}
@@ -166,6 +170,16 @@ public:
 		UAVCONF_READ_PROP_REAL(_T("HMAP_H_max"), _hmap_map_height_max);
 		UAVCONF_READ_PROP_REAL(_T("HMAP_H_min"), _hmap_map_height_min);
 
+		UAVCONF_READ_PROP_REAL(_T("WP_LINE_WIDTH"), _wp_line_width);
+		UAVCONF_READ_PROP_REAL(_T("WP_OFFSET_FROM_GROUND"), _wp_offset_z);
+		prop = getProperty(_T("WP_LINE_COLOR"));
+		if (prop) {
+			float wp_color[4];
+			parse_vector(wp_color, 4, prop);
+			for (int i = 0; i<4; i++)
+				_wp_line_color[i] = wp_color[i];
+		}
+
 		_bLoaded = true;
 	}
 	
@@ -213,6 +227,10 @@ public:
 	const float heightmapMapHeightMax() const { return _hmap_map_height_max; }
 	const float heightmapMapHeightMin() const { return _hmap_map_height_min; }
 
+	const float wpLineWidth() const { return _wp_line_width; }
+	const float wpOffsetFromGround() const { return _wp_offset_z; }
+	const float* wpLineColor() const { return _wp_line_color; }
+
 private:
 	bool _bLoaded;
 
@@ -257,6 +275,10 @@ private:
 	float _hmap_map_length;
 	float _hmap_map_height_min;
 	float _hmap_map_height_max;
+	// waypoints
+	float _wp_line_width;
+	float _wp_offset_z;
+	float _wp_line_color[4];
 };
 
 #endif // __UAV_CONF_H__

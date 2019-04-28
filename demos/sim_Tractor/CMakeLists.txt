@@ -40,6 +40,7 @@ LIST(APPEND ${name}_EXTRA_SRCS
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/gyro_v1.0.dml"
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/kinematic_motor_v1.0.dml"
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/PTO_v2.0.dml"
+	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/WP_v1.0.dml"
 	)
 LIST(APPEND ${name}_EXTRA_SRCS_NAME
 	"UAV Header"
@@ -50,6 +51,7 @@ LIST(APPEND ${name}_EXTRA_SRCS_NAME
 	"HeightMap"
 	"HeightMap"
 	"XDL"
+	"DML"
 	"DML"
 	"DML"
 	"DML"

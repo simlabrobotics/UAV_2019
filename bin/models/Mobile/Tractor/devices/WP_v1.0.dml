@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="Waypoint Display" rdd="VIRTUAL" target="BODY" type="BOTH" ver="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="www.wonikrobotics.com" creator="Sean Yi" date="2017/8/16" description="Display waypoints on the map" email="seanyi@wonikrobotics.com"/>
+
+  <specification byte="4" graphics="..\..\..\devices\rGraphicsUAVWaypoints.rgd" period="1000000" physics="..\..\..\devices\rDeviceUAVWaypoints.rdd">
+    <property name="HMAP_H_max" value="10"/>
+    <property name="HMAP_H_min" value="-10"/>
+    <property name="HMAP_L" value="100"/>
+    <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\100x100.bmp"/>
+    <property name="HMAP_W" value="100"/>
+    <property name="LINE_COLOR" value="1.0 1.0 0.0 0.7"/>
+    <property name="LINE_WIDTH" value="4"/>
+    <property name="OFFSET_FROM_GROUND" value="1.0"/>
+    <property name="WP_COLOR" value="1.0 1.0 0.0 1.0"/>
+    <property name="WP_LABEL_COLOR" value="1.0 1.0 0.0 1.0"/>
+    <property name="WP_LABEL_FORMAT" value="wp_%d"/>
+    <property name="WP_LABEL_POS" value="0.0 0.0 0.5"/>
+    <property name="WP_LABEL_SIZE" value="50"/>
+    <property name="WP_SIZE" value="0.2"/>
+    <property name="visible" value="true"/>
+  </specification>
+
+</Device>

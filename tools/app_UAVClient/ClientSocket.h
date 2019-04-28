@@ -17,6 +17,7 @@ public:
 
 	void sendVelocity(float lvel_rps, float rvel_rps);
 	void sendMovePTO(int down);
+	void resetPath();
 	void reqCoverage();
 	void reqSlipAngle();
 	void reqGPS();

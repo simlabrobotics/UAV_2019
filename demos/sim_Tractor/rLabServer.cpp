@@ -1,4 +1,4 @@
-/* RoboticsLab, Copyright 2008-2016 Wonik Robotics. All rights reserved.
+ï»¿/* RoboticsLab, Copyright 2008-2016 Wonik Robotics. All rights reserved.
  *
  * This library is commercial and cannot be redistributed, and/or modified
  * WITHOUT ANY ALLOWANCE OR PERMISSION OF Wonik Robotics.
@@ -15,8 +15,10 @@ using namespace rlab::rxsdk;
 #include "rLabServer.h"
 #include "UAV_protocol.h"
 #include "UAV_cmd.h"
+#include "UAV_conf.h"
 #include "../common/HeightMap.h"
 extern HeightMap hmap;
+extern UAVConf appConf;
 
 bool up   = false;
 bool down = false;
@@ -37,6 +39,7 @@ rLabServer::rLabServer()
 , _pto(NULL)
 , _grid(NULL)
 , _gridTool(NULL)
+, _wp(NULL)
 , _dT(0)
 , _recv_count(0)
 , _send_count(0)
@@ -477,6 +480,7 @@ void rLabServer::bindSystem(rxSystem* sys, rxEnvironment* env)
 		rxSystem* workAreaCalc = env->findSystem(_T("Environment::WorkAreaCalc.aml"));
 		if (workAreaCalc) {
 			_grid = workAreaCalc->findDevice(_T("GRID"));
+			_wp = workAreaCalc->findDevice(_T("WP"));
 		}
 	}
 }
@@ -488,26 +492,27 @@ void rLabServer::setTimeStep(double dT)
 
 void rLabServer::onAddWaypoint(const WAYPOINT& waypoint)
 {
-	char wp_name[16] = {0, };
+	char wp_name[16] = { 0, };
 	sprintf(wp_name, "wp_%d", waypoint.index);
 
 	//std::vector<rMath::Vector3D> vertexPoints;
 
-	if (waypoint.index == 1/*&& Ã¹¹øÂ° ¿þÀÌ Æ÷ÀÎÆ®ÀÎ °æ¿ì*/)
+	if (waypoint.index == 1/*&& ÃƒÂ¹Â¹Ã¸Ã‚Â° Â¿Ã¾Ã€ÃŒ Ã†Ã·Ã€ÃŽÃ†Â®Ã€ÃŽ Â°Ã¦Â¿Ã¬*/)
 	{
 		_waypoints.clear();
 
-		if (NULL != _drive )
+		if (NULL != _drive)
 		{
 			float val[3];
 			val[0] = waypoint.x;
 			val[1] = waypoint.y;
 			val[2] = waypoint.angle*DEGREE;
 			///val[2] = 0;
-			_drive->writeDeviceValue(val ,sizeof(float)*3, UAVDRV_DATAPORT_SET_POSE);
+			_drive->writeDeviceValue(val, sizeof(float) * 3, UAVDRV_DATAPORT_SET_POSE);
 		}
 	}
 
+	// draw path and waypoints with labels using custom draw(compatible with RobotisLab 1.14):
 	WAYPOINT wp0;
 	if (_waypoints.empty())
 		wp0 = waypoint;
@@ -518,30 +523,72 @@ void rLabServer::onAddWaypoint(const WAYPOINT& waypoint)
 
 	// draw waypoint
 	float height, height0;
+
 	hmap.GetHeight(wp0.x, wp0.y, height0);
 	hmap.GetHeight(waypoint.x, waypoint.y, height);
-	rID cid = INVALID_RID;
+
 	rlab::utils::rCustomDrawInfo drawInfo;
 	drawInfo.name = wp_name;
 	drawInfo.flag = rlab::utils::CUSTOM_DRAW_NEW;
 	drawInfo.drawType = rlab::utils::CUSTOM_DRAW_POLYLINE;
-	drawInfo.lineWidth = 5;
+	drawInfo.lineWidth = appConf.wpLineWidth();
 	drawInfo.T.translation()[0] = waypoint.x;
 	drawInfo.T.translation()[1] = waypoint.y;
-	drawInfo.T.translation()[2] = height+1.0;
-	drawInfo.color[0] = 1.0;
-	drawInfo.color[1] = 0;
-	drawInfo.color[2] = 0;
-	drawInfo.color[3] = 0.4;
-	drawInfo.vertexCnt = 2;
-	drawInfo.vertexPoints.push_back(Vector3D(0, 0, -0.5));
-	drawInfo.vertexPoints.push_back(Vector3D(wp0.x-waypoint.x, wp0.y-waypoint.y, height0-height-0.5));
-	drawInfo.vertexNormals.push_back(Vector3D(0.0, 0.0, 1.0));
-	drawInfo.vertexNormals.push_back(Vector3D(0.0, 0.0, 1.0));
-	drawInfo.vertexColors.push_back(rColor(1.0, 0.0, 0.0, 0.4));
-	drawInfo.vertexColors.push_back(rColor(1.0, 0.0, 0.0, 0.4));
+	drawInfo.T.translation()[2] = height + appConf.wpOffsetFromGround();
+	drawInfo.color[0] = appConf.wpLineColor()[0];
+	drawInfo.color[1] = appConf.wpLineColor()[1];
+	drawInfo.color[2] = appConf.wpLineColor()[2];
+	drawInfo.color[3] = appConf.wpLineColor()[3];
 
-	cid = PHYSICS_WORLD.customDraw(drawInfo);
+	// add begin point:
+	drawInfo.vertexPoints.push_back(Vector3D(0, 0, 0));
+	drawInfo.vertexNormals.push_back(Vector3D(0.0, 0.0, 1.0));
+	drawInfo.vertexColors.push_back(rColor(appConf.wpLineColor()[0], appConf.wpLineColor()[1], appConf.wpLineColor()[2], appConf.wpLineColor()[3]));
+
+	// calculate mid point(s):
+	std::list<WAYPOINT> mid_points;
+	WAYPOINT mid_point;
+	float distance;
+	distance = sqrt((wp0.x - waypoint.x)*(wp0.x - waypoint.x) + (wp0.y - waypoint.y)*(wp0.y - waypoint.y));
+	int mid_point_count = (int)(distance / 3);
+	for (int mid_point_num = 0; mid_point_num<mid_point_count; mid_point_num++)
+	{
+		mid_point.x = waypoint.x + (wp0.x - waypoint.x) / (float)(mid_point_count + 1)*(float)(mid_point_num + 1);
+		mid_point.y = waypoint.y + (wp0.y - waypoint.y) / (float)(mid_point_count + 1)*(float)(mid_point_num + 1);
+		hmap.GetHeight(mid_point.x, mid_point.y, mid_point.angle);
+		mid_points.push_back(mid_point);
+	}
+
+	// add mid points(s):
+	for (std::list<WAYPOINT>::iterator ptr = mid_points.begin(); ptr != mid_points.end(); ptr++)
+	{
+		drawInfo.vertexPoints.push_back(Vector3D((*ptr).x - waypoint.x, (*ptr).y - waypoint.y, (*ptr).angle - height));
+		drawInfo.vertexNormals.push_back(Vector3D(0.0, 0.0, 1.0));
+		drawInfo.vertexColors.push_back(rColor(appConf.wpLineColor()[0], appConf.wpLineColor()[1], appConf.wpLineColor()[2], appConf.wpLineColor()[3]));
+	}
+
+	// add end point:
+	drawInfo.vertexPoints.push_back(Vector3D(wp0.x - waypoint.x, wp0.y - waypoint.y, height0 - height));
+	drawInfo.vertexNormals.push_back(Vector3D(0.0, 0.0, 1.0));
+	drawInfo.vertexColors.push_back(rColor(appConf.wpLineColor()[0], appConf.wpLineColor()[1], appConf.wpLineColor()[2], appConf.wpLineColor()[3]));
+
+	// add mid points(s) in reverse order:
+	for (std::list<WAYPOINT>::reverse_iterator ptr = mid_points.rbegin(); ptr != mid_points.rend(); ptr++)
+	{
+		drawInfo.vertexPoints.push_back(Vector3D((*ptr).x - waypoint.x, (*ptr).y - waypoint.y, (*ptr).angle - height));
+		drawInfo.vertexNormals.push_back(Vector3D(0.0, 0.0, 1.0));
+		drawInfo.vertexColors.push_back(rColor(appConf.wpLineColor()[0], appConf.wpLineColor()[1], appConf.wpLineColor()[2], appConf.wpLineColor()[3]));
+	}
+
+	drawInfo.vertexCnt = (2 + mid_point_count * 2);
+	rID cid = PHYSICS_WORLD.customDraw(drawInfo);
+
+	// draw path using waypoint device if exists:
+	if (NULL != _wp)
+	{
+		WAYPOINT wp = waypoint;
+		_wp->writeDeviceValue(&wp, sizeof(WAYPOINT));
+	}
 }
 
 void rLabServer::onSetTargetWheelVelocity(float lvel_rps, float rvel_rps)

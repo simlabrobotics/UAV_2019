@@ -13,6 +13,24 @@
 
   <property name="HMAP_W" value="100"/>
 
+  <property name="WP_COLOR" value="1.0 1.0 0.0 1.0"/>
+
+  <property name="WP_LABEL_COLOR" value="1.0 1.0 0.0 1.0"/>
+
+  <property name="WP_LABEL_FORMAT" value="wp_%d"/>
+
+  <property name="WP_LABEL_POS" value="0.0 0.0 0.5"/>
+
+  <property name="WP_LABEL_SIZE" value="50"/>
+
+  <property name="WP_LINE_COLOR" value="1.0 1.0 0.0 1.0"/>
+
+  <property name="WP_LINE_WIDTH" value="3"/>
+
+  <property name="WP_OFFSET_FROM_GROUND" value="1.0"/>
+
+  <property name="WP_SIZE" value="0.2"/>
+
   <property name="aml_R0" value="0 -1 0 1 0 0 0 0 1"/>
 
   <property name="aml_enable" value="true"/>
@@ -57,9 +75,9 @@
 
   <property name="plot_position" value="true"/>
 
-  <property name="plot_velocity" value="true"/>
-
   <property name="plot_slippage" value="true"/>
+
+  <property name="plot_velocity" value="true"/>
 
   <property name="time_step" value="0.01"/>
 

@@ -13,9 +13,9 @@ namespace rlab {
 namespace plugin {
 
 rGraphicsUAVGrid::rGraphicsUAVGrid()
-: _hGrid(0)
-, _hGridOccupied(0)
-, _hNormal(0)
+: _hGrid(-1)
+, _hGridOccupied(-1)
+, _hNormal(-1)
 , _byTrace(NULL)
 , _cols(0)
 , _rows(0)
@@ -231,7 +231,7 @@ void rGraphicsUAVGrid::onRender(double dTime)
 	cellPos[1] = (float)bodyT_inv.translation()[1];
 	cellPos[2] = (float)bodyT_inv.translation()[2];*/
 
-	if (_hGrid) {
+	if (_hGrid >= 0) {
 		setColor(_hGrid, _grid_color[0], _grid_color[1], _grid_color[2], _grid_color[3]);
 		//translate(_hGrid, (float*)cellPos);
 		//rotate(_hGrid, (float*)cellRot);
@@ -239,7 +239,7 @@ void rGraphicsUAVGrid::onRender(double dTime)
 			show(_hGrid, true); // force to show grid even though user turns off visiblity in rPlayer.
 	}
 
-	if (_hNormal) {
+	if (_hNormal >= 0) {
 		if (!_grid_visible_normal) {
 			show(_hNormal, false);
 		}
@@ -250,7 +250,7 @@ void rGraphicsUAVGrid::onRender(double dTime)
 		}
 	}
 
-	if (_hGridOccupied) {
+	if (_hGridOccupied >= 0) {
 		int vertexCnt = (_rows +1) * (_cols + 1);
 		int quadCnt = _rows * _cols;
 		int vertex_index = 0;
