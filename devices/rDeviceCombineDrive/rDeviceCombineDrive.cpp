@@ -247,7 +247,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case UAVDRV_DATAPORT_SET_VEL_IMMEDIATE:
+	case UAVDRV_DATAPORT_SET_WHEEL_VEL_IMMEDIATE:
 		{
 			if (len >= 2*sizeof(float))
 			{
@@ -358,7 +358,7 @@ int rDeviceCombineDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 		break;
 
-	case UAVDRV_DATAPORT_SET_VEL_TARGET: // set velocity command
+	case UAVDRV_DATAPORT_SET_WHEEL_VEL_TARGET: // set velocity command
 		{
 			if (len >= 2*sizeof(float))
 			{

@@ -124,7 +124,7 @@ private:
 	float	_slip_ratio;
 
 	// minimum forward velocity to apply extended bicycle model with lateral vehicle dynamics
-	float	_v_threshod_to_apply_slipage;
+	float	_v_threshod_to_apply_slippage;
 
 	// height map
 	HeightMap _hmap;

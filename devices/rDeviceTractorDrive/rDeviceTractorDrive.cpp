@@ -124,7 +124,7 @@ rDeviceTractorDrive::rDeviceTractorDrive()
 	, _betaf(0), _betar(0)
 	, _Ff(0), _Fr(0)
 	, _slip_ratio(0)
-	, _v_threshod_to_apply_slipage(0.3f)
+	, _v_threshod_to_apply_slippage(0.3f)
 	, _hmap_normal_window_size(1)
 {
 	sample_init();
@@ -448,7 +448,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		/////////////////////////////////////////////////////////////////////
 		// calcurate new position and orientation
 		//
-		if (_v >= _v_threshod_to_apply_slipage)
+		if (_v >= _v_threshod_to_apply_slippage)
 		{
 			if (_Iz == 0 || _m == 0)
 			{
@@ -514,7 +514,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		}
 		else
 		{
-			// for the backward direction, apply normal kinematics model.
+			// apply normal kinematics model without slippage.
 
 			_beta = 0.0f;
 			_betadot = 0.0f;
@@ -715,9 +715,9 @@ void rDeviceTractorDrive::InitParams()
 	if (slip_ratio)
 		_slip_ratio = (float)RD_BOUND(_tstof(slip_ratio), 0, 1.0);
 
-	const TCHAR* v_threshold = getProperty(_T("velocity_threshold_to_apply_slipage"));
+	const TCHAR* v_threshold = getProperty(_T("velocity_threshold_to_apply_slippage"));
 	if (v_threshold)
-		_v_threshod_to_apply_slipage = (float)RD_LBOUND(_tstof(v_threshold), 1.0e-4);
+		_v_threshod_to_apply_slippage = (float)RD_LBOUND(_tstof(v_threshold), 1.0e-4);
 }
 
 void rDeviceTractorDrive::InitHeightMap()

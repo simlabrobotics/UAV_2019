@@ -62,11 +62,17 @@ void rLabServer::onMessage(int id, kaiMsg &msg)
 		}
 		break;
 
+	case UAVP_SET_WHEEL_VELOCITY:
 	case UAVP_SET_VELOCITY:
 		{
 			float val[2] = {0, 0};
-			memcpy(&val, (char*)msg.buffer() + 8, sizeof(float)*2); // left & right wheel velocity in rad/sec 
-			onRecvCommand(val[0], val[1]);
+			memcpy(&val, (char*)msg.buffer() + 8, sizeof(float)*2);
+			if (msg.id() == UAVP_SET_WHEEL_VELOCITY)
+				onSetTargetWheelVelocity(val[0], val[1]); // left & right wheel velocity in rad/sec 
+			else if (msg.id() == UAVP_SET_VELOCITY)
+				onSetTargetVelocity(val[0], val[1]); // target vehicle velocity, (v, w)
+			else
+				break; // Exception!
 
 			/*PHYSICS_WORLD->activateWorld();
 			if (PHYSICS_WORLD->time() > 0) 
@@ -121,10 +127,18 @@ void rLabServer::onMessage(int id, kaiMsg &msg)
 		}
 		break;
 
-	case UAVP_SET_MAXIMUM_VELOCITY:
+	case UAVP_SET_MAXIMUM_WHEEL_VELOCITY:
 		{
 			float val[2] = {0, 0};
-			memcpy(&val, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float)*2); // left & right wheel maximum velocity in rad/sec 
+			memcpy(&val, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float)*2); // maximum wheel velocity in rad/sec and acceleration in rad/sec^2
+			onSetMaximumWheelVelocity(val[0], val[1]);
+		}
+		break;
+
+	case UAVP_SET_MAXIMUM_VELOCITY:
+		{
+			float val[2] = { 0, 0 };
+			memcpy(&val, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float) * 2); // maximum linear velocity in m/sec and rotational velocity in rad/sec
 			onSetMaximumVelocity(val[0], val[1]);
 		}
 		break;
@@ -460,7 +474,7 @@ void rLabServer::bindSystem(rxSystem* sys, rxEnvironment* env)
 	}
 	if (env)
 	{
-		rxSystem* workAreaCalc = env->findSystem(_T("WorkAreaCalc.aml"));
+		rxSystem* workAreaCalc = env->findSystem(_T("Environment::WorkAreaCalc.aml"));
 		if (workAreaCalc) {
 			_grid = workAreaCalc->findDevice(_T("GRID"));
 		}
@@ -530,22 +544,40 @@ void rLabServer::onAddWaypoint(const WAYPOINT& waypoint)
 	cid = PHYSICS_WORLD.customDraw(drawInfo);
 }
 
-void rLabServer::onRecvCommand(float lvel_rps, float rvel_rps)
+void rLabServer::onSetTargetWheelVelocity(float lvel_rps, float rvel_rps)
 {
 	if (NULL == _drive) return;
 	float val[2];
 	val[0] = lvel_rps;
 	val[1] = rvel_rps;
-	_drive->writeDeviceValue(val ,sizeof(float)*2);
+	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_WHEEL_VEL_TARGET);
 }
 
-void rLabServer::onSetMaximumVelocity(float max_vel_rps, float max_acc_rpss)
+void rLabServer::onSetTargetVelocity(float v_mps, float w_rps)
+{
+	if (NULL == _drive) return;
+	float val[2];
+	val[0] = v_mps;
+	val[1] = w_rps;
+	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_VEL_TARGET);
+}
+
+void rLabServer::onSetMaximumWheelVelocity(float max_vel_rps, float max_acc_rpss)
 {
 	if (NULL == _drive) return;
 	float val[2];
 	val[0] = max_vel_rps;
 	val[1] = max_acc_rpss;
-	_drive->writeDeviceValue(val ,sizeof(float)*2);
+	_drive->writeDeviceValue(val ,sizeof(float)*2, UAVDRV_DATAPORT_SET_MAXIMUM_WHEEL_VEL);
+}
+
+void rLabServer::onSetMaximumVelocity(float max_v_mps, float max_w_rps)
+{
+	if (NULL == _drive) return;
+	float val[2];
+	val[0] = max_v_mps;
+	val[1] = max_w_rps;
+	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_MAXIMUM_VEL);
 }
 
 void rLabServer::onSetPose(const POSE2D &pose)

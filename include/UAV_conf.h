@@ -46,6 +46,8 @@ public:
 		, _plot_gyro_sensor_enabled(false)
 		, _plot_gps_sensor_enabled(false)
 		, _plot_slippage_enabled(false)
+		, _plot_slippage_tracked_enabled(false)
+		, _plot_lateral_force_enabled(false)
 		, _net_port_simulation(5150)
 		, _net_port_control(5250)
 		, _debug_control_local_enable(false)
@@ -150,6 +152,8 @@ public:
 		UAVCONF_READ_PROP_BOOLEAN(_T("plot_acc_sensor"), _plot_acc_sensor_enabled);
 		UAVCONF_READ_PROP_BOOLEAN(_T("plot_gps_sensor"), _plot_gps_sensor_enabled);
 		UAVCONF_READ_PROP_BOOLEAN(_T("plot_slippage"), _plot_slippage_enabled);
+		UAVCONF_READ_PROP_BOOLEAN(_T("plot_slippage_tracked"), _plot_slippage_tracked_enabled);
+		UAVCONF_READ_PROP_BOOLEAN(_T("plot_lateral_force"), _plot_lateral_force_enabled);
 
 		UAVCONF_READ_PROP_BOOLEAN(_T("debug_control_local_enable"), _debug_control_local_enable);
 
@@ -195,7 +199,9 @@ public:
 	bool enablePlotGyroSensor() const { return _plot_gyro_sensor_enabled; }
 	bool enablePlotGPSSensor() const { return _plot_gps_sensor_enabled; }
 	bool enablePlotSlippage() const { return _plot_slippage_enabled; }
-
+	bool enablePlotSlippageTracked() const { return _plot_slippage_tracked_enabled; }
+	bool enablePlotLateralForce() const { return _plot_lateral_force_enabled; }
+	
 	unsigned short netSimulationPort() const { return _net_port_simulation; }
 	unsigned short netControlPort() const { return _net_port_control; }
 
@@ -238,6 +244,8 @@ private:
 	bool _plot_gyro_sensor_enabled;
 	bool _plot_gps_sensor_enabled;
 	bool _plot_slippage_enabled;
+	bool _plot_slippage_tracked_enabled;
+	bool _plot_lateral_force_enabled;
 	// network
 	unsigned short _net_port_simulation;
 	unsigned short _net_port_control;

@@ -3,19 +3,19 @@
 
   <credit address="" creator="" date="" description="" email=""/>
 
-  <specification byte="4" graphics="..\..\..\devices\rGraphicsTractorGrid.rgd" period="1000000" physics="..\..\..\devices\rDeviceTractorGrid.rdd">
+  <specification byte="4" graphics="..\..\..\devices\rGraphicsUAVGrid.rgd" period="1000000" physics="..\..\..\devices\rDeviceUAVGrid.rdd">
     <property name="CELL_SIZE" value="0.5"/>
     <property name="GRID_COLOR" value="0.27 0.27 0.27"/>
     <property name="GRID_COLOR_OCCUPIED" value="1.0 0.8 0.0 1.0"/>
     <property name="GRID_HEIGHT" value="0.01"/>
     <property name="GRID_HEIGHT_OCCUPIED" value="0.02"/>
     <property name="GRID_VISIBLE" value="true"/>
-    <property name="GRID_VISIBLE_NORMAL" value="false"/>
-    <property name="GRID_VISIBLE_OCCUPIED" value="false"/>
+    <property name="GRID_VISIBLE_NORMAL" value="true"/>
+    <property name="GRID_VISIBLE_OCCUPIED" value="true"/>
     <property name="HMAP_H_max" value="10"/>
     <property name="HMAP_H_min" value="-10"/>
     <property name="HMAP_L" value="100"/>
-    <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\slope.bmp"/>
+    <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\100x100.bmp"/>
     <property name="HMAP_W" value="100"/>
     <property name="READ_SIZE_MAX" value="32000"/>
     <property name="TOOL_BODY_NAME" value="worker"/>
@@ -24,6 +24,7 @@
     <property name="__coordinate_frame__" value="{x:TOOL lateral direction}"/>
     <property name="col" value="200"/>
     <property name="row" value="200"/>
+    <property name="visible" value="true"/>
   </specification>
 
 </Device>

@@ -56,12 +56,15 @@ void GyroDataCallback(std::vector<double>& data);
 void AccDataCallback(std::vector<double>& data);
 void VehicleDataCallback(std::vector<double>& data);
 void SlipDataCallback(std::vector<double>& data);
+void SlipDataCallbackTracked(std::vector<double>& data);
+void LateralForceDataCallback(std::vector<double>& data);
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-float w_l_des = 0.0f; // desired left wheel velocity
-float w_r_des = 0.0f; // desired right wheel velocity
-const float W_INC = 0.27f;//0.01;
+float v_des = 0.0f; // desired velocity
+float theta_des = 0.0f; // desired steer angle
+const float V_INC = 0.27f;//0.01;
+const float THETA_INC = (float)(5.0*DEGREE);
 float pto_des = 0.0f;
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -127,14 +130,14 @@ void MyKeyboardHandler(int key, void* data)
 {
 	switch (key)
 	{
-	case VK_UP: w_l_des += W_INC; w_r_des += W_INC; break;
-	case VK_DOWN: w_l_des -= W_INC; w_r_des -= W_INC; break;
-	case VK_LEFT: w_l_des -= W_INC; w_r_des += W_INC; break;
-	case VK_RIGHT: w_l_des += W_INC; w_r_des -= W_INC; break;
-	case VK_SPACE: w_l_des = 0; w_r_des = 0; break;
+	case VK_UP: v_des += V_INC; break;
+	case VK_DOWN: v_des -= V_INC; break;
+	case VK_LEFT: theta_des += THETA_INC; break;
+	case VK_RIGHT: theta_des -= THETA_INC; break;
+	case VK_SPACE: v_des = 0; break;
 
-	case VK_PRIOR: pto_des = (float)(0*DEGREE); break;
-	case VK_NEXT: pto_des = (float)(30*DEGREE); break;
+	case VK_PRIOR: pto_des = (float)(0 * DEGREE); break;
+	case VK_NEXT: pto_des = (float)(30 * DEGREE); break;
 
 	case VK_T:
 		rShowTrace(aml_name, _T("Body"), BLUE);
@@ -185,9 +188,9 @@ void MyControlCallback(rTime time, void* data)
 	if (carDrive)
 	{
 		float val[2];
-		val[0] = w_l_des;
-		val[1] = w_r_des;
-		carDrive->writeDeviceValue(val, sizeof(val));
+		val[0] = v_des;
+		val[1] = theta_des;
+		carDrive->writeDeviceValue(val, sizeof(val), UAVDRV_DATAPORT_SET_VEL_TARGET);
 	}
 
 	rxDevice* pto = sys->findDevice(_T("PTO"));
@@ -198,12 +201,13 @@ void MyControlCallback(rTime time, void* data)
 		pto->writeDeviceValue(&val, sizeof(val));
 	}
 
-	if (env && env->findSystem(_T("WorkAreaCalc.aml")))
+	if (env && env->findSystem(_T("Environment::WorkAreaCalc.aml")))
 	{
-		rxDevice* grid = env->findSystem(_T("WorkAreaCalc.aml"))->findDevice(_T("GRID"));
+		rxDevice* grid = env->findSystem(_T("Environment::WorkAreaCalc.aml"))->findDevice(_T("GRID"));
 		if (grid)
 		{
-			int cmd = (pto_des < 0 ? 1 : 0);
+			//int cmd = (pto_des < 0 ? 1 : 0);
+			int cmd = pto_des == 0 ? 0 : 1;
 			grid->writeDeviceValue(&cmd, sizeof(int));
 		}
 	}
@@ -300,6 +304,41 @@ void SlipDataCallback(std::vector<double>& data)
 	float val[3];
 	if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_SLIP_ANGLE))
 	{
+		data.push_back(val[0] * RADIAN); // beta
+		data.push_back(val[1] * RADIAN);
+		data.push_back(val[2] * RADIAN);
+	}
+	else
+	{
+		float nil(0.0f);
+		data.push_back(nil);
+		data.push_back(nil);
+		data.push_back(nil);
+	}
+	
+	if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_POSE_LOCAL))
+	{
+		data.push_back(val[0] * RADIAN); // steer angle
+		data.push_back(val[1]);  // current forward(longitudinal) velocity
+		data.push_back(val[2]);  // current lateral velocity
+	}
+	else
+	{
+		float nil(0.0f);
+		data.push_back(nil);
+		data.push_back(nil);
+		data.push_back(nil);
+	}
+}
+
+void SlipDataCallbackTracked(std::vector<double>& data)
+{
+	if (!sys) return;
+	rxDevice* carDrive = sys->findDevice(_T("CarDrive"));
+	if (!carDrive) return;
+	float val[3];
+	if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_SLIP_ANGLE))
+	{
 		data.push_back(val[2] * RADIAN);
 		data.push_back(val[0]);
 		data.push_back(val[1]);
@@ -311,7 +350,7 @@ void SlipDataCallback(std::vector<double>& data)
 		data.push_back(nil);
 		data.push_back(nil);
 	}
-	
+
 	if (0 < carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_VELOCITY))
 	{
 		data.push_back(val[2] * RADIAN); // angular velocity
@@ -325,6 +364,17 @@ void SlipDataCallback(std::vector<double>& data)
 		data.push_back(nil);
 		data.push_back(nil);
 	}
+}
+
+void LateralForceDataCallback(std::vector<double>& data)
+{
+	if (!sys) return;
+	rxDevice* carDrive = sys->findDevice(_T("CarDrive"));
+	if (!carDrive) return;
+	float val[2];
+	carDrive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_LATERAL_FORCE);
+	data.push_back(val[0]);
+	data.push_back(val[1]);
 }
 
 void SetupDAQ()
@@ -356,6 +406,20 @@ void SetupDAQ()
 		rID pid_s = rdaqCreatePlot(_T("Slip"), eDataPlotType_TimeLine);
 		rID did_s = rdaqAddData(pid_s, SlipDataCallback);
 		datanames.clear();
+		datanames.push_back(_T("beta slip angle(deg)"));
+		datanames.push_back(_T("front slip angle(deg)"));
+		datanames.push_back(_T("rear slip angle(deg)"));
+		datanames.push_back(_T("steer angle(deg)"));
+		datanames.push_back(_T("velocity(m/s)"));
+		datanames.push_back(_T("lateral velocity(m/s)"));
+		rdaqSetDataNames(did_s, datanames);
+	}
+
+	if (appConf.enablePlotSlippageTracked())
+	{
+		rID pid_s = rdaqCreatePlot(_T("Slip_Tracked"), eDataPlotType_TimeLine);
+		rID did_s = rdaqAddData(pid_s, SlipDataCallbackTracked);
+		datanames.clear();
 		datanames.push_back(_T("slip angle(deg)"));
 		datanames.push_back(_T("slip ratio(left, i_L)"));
 		datanames.push_back(_T("slip ratio(left, i_R)"));
@@ -363,6 +427,16 @@ void SetupDAQ()
 		datanames.push_back(_T("linear velocity in global x direction(m/s)"));
 		datanames.push_back(_T("linear velocity in global y direction(m/s)"));
 		rdaqSetDataNames(did_s, datanames);
+	}
+
+	if (appConf.enablePlotLateralForce())
+	{
+		rID pid_f = rdaqCreatePlot(_T("Lateral Force"), eDataPlotType_TimeLine);
+		rID did_f = rdaqAddData(pid_f, LateralForceDataCallback);
+		datanames.clear();
+		datanames.push_back(_T("F_front(N)"));
+		datanames.push_back(_T("F_rear(N)"));
+		rdaqSetDataNames(did_f, datanames);
 	}
 
 	if (appConf.enablePlotGPSSensor())

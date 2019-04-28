@@ -23,8 +23,10 @@ public:
 
 public:
 	virtual void onAddWaypoint(const WAYPOINT &waypoint);
-	virtual void onRecvCommand(float lvel_rps, float rvel_rps);
-	virtual void onSetMaximumVelocity(float max_vel_rps, float max_acc_rpss);
+	virtual void onSetTargetWheelVelocity(float lvel_rps, float rvel_rps);
+	virtual void onSetTargetVelocity(float v_mps, float w_rps);
+	virtual void onSetMaximumWheelVelocity(float max_vel_rps, float max_acc_rpss);
+	virtual void onSetMaximumVelocity(float max_v_mps, float max_w_rps);
 	virtual void onSetPose(const POSE2D &pose);
 	virtual void onMotionState(const MOTIONSTATE &motionstate);
 	//virtual void upWorker(const UPWORKER &upworker);
