@@ -17,6 +17,6 @@
 
   <component R="1 0 0 0 1 0 0 0 1" aml="terrain.xml" is_static="true" name="Base" r="0 0 0"/>
 
-  <component R="1 0 0 0 1 0 0 0 1" aml="..\..\Mobile\Combine\WorkAreaCalc.aml" is_static="true" name="WorkAreaCalc.aml" r="0 0 0"/>
+  <component R="1 0 0 0 1 0 0 0 1" aml="..\..\Mobile\Tractor\WorkAreaCalc.aml" is_static="true" name="WorkAreaCalc.aml" r="0 0 0"/>
 
 </Environment>

@@ -9,7 +9,7 @@
 
   <property name="HMAP_L" value="100"/>
 
-  <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\slope.bmp"/>
+  <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\100x100.bmp"/>
 
   <property name="HMAP_W" value="100"/>
 
