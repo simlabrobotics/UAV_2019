@@ -83,6 +83,11 @@ int _tmain(int argc, _TCHAR* argv[])
 				sys[uav_no] = rCreateStaticSystem(aml_path[uav_no], aml_name[uav_no], aml_T0[uav_no], aml_q0[uav_no]);
 			else
 				sys[uav_no] = rCreateSystem(aml_path[uav_no], aml_name[uav_no], aml_T0[uav_no], aml_q0[uav_no]);
+		}
+		else
+		{
+			sys[uav_no] = NULL;
+		}
 	}
 
 	if (bEnvironment)
