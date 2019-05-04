@@ -19,11 +19,9 @@ using namespace rlab::rxsdk;
 #include "rLabServer.h"
 #include "UAV_conf.h"
 #include "UAV_cmd.h"
-#include "../common/HeightMap.h"
 
 UAVConf appConf;
 rLabServer svr;
-HeightMap hmap;
 
 bool bContact = true;		// Enables/disables contact dynamics.
 bool bQuit = false;			// Set this flag true to quit this program.
@@ -31,23 +29,21 @@ bool bRun = false;			// Set this flag true to activate the program.
 										// See OnKeyRun() function for the details.
 rTime delT = 0.001;
 unsigned int listenPort = 5150;
-unsigned int controlPort = 5250;
-string_type aml_path = _T("models/Mobile/Combine/tractor.aml");
-string_type aml_name = _T("Combine");
-HTransform aml_T0;
-dVector aml_q0;
-rxSystem* sys = NULL;
+unsigned int controlPort[MAX_UAV_NUM];
+string_type aml_path[MAX_UAV_NUM];
+string_type aml_name[MAX_UAV_NUM];
+HTransform aml_T0[MAX_UAV_NUM];
+dVector aml_q0[MAX_UAV_NUM];
+rxSystem* sys[MAX_UAV_NUM];
 string_type eml_path = _T("models/Environment/Ground/ground.eml");
 string_type eml_name = _T("Environment");
 HTransform eml_T0;
 rxEnvironment* env = NULL;
-bool bKinematics = true;
 bool bEnvironment = false;
 
 void ParseCommand(int argc, _TCHAR* argv[]);
 void PrintUsage(int argc, _TCHAR* argv[]);
 void PrintInstruction();
-void LoadHeightMap();
 void SetupDAQ();
 void MyKeyboardHandler(int key, void* data);
 void MyControlCallback(rTime time, void* data);
@@ -78,10 +74,17 @@ int _tmain(int argc, _TCHAR* argv[])
 	rSetGravity(0, 0, -(float)GRAV_ACC);
 	rCreatePlane(0, 0, 1, 0);
 
-	if (bKinematics)
-		sys = rCreateStaticSystem(aml_path, aml_name, aml_T0, aml_q0);
-	else
-		sys = rCreateSystem(aml_path, aml_name, aml_T0, aml_q0);
+	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
+	{
+		if (appConf.enableAml(uav_no))
+		{
+			_tprintf(_T("Loading... (%s)\n"), aml_path[uav_no].c_str());
+			if (appConf.amlIsStatic(uav_no))
+				sys[uav_no] = rCreateStaticSystem(aml_path[uav_no], aml_name[uav_no], aml_T0[uav_no], aml_q0[uav_no]);
+			else
+				sys[uav_no] = rCreateSystem(aml_path[uav_no], aml_name[uav_no], aml_T0[uav_no], aml_q0[uav_no]);
+	}
+
 	if (bEnvironment)
 		env = rCreateEnvironment(eml_path, eml_name, eml_T0);
 
@@ -105,7 +108,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		svr.run(true);
 	}
 
-	LoadHeightMap();
 	SetupDAQ();
 	PrintInstruction();
 
@@ -473,19 +475,6 @@ void SetupDAQ()
 	}
 }
 
-void LoadHeightMap()
-{
-	if (!hmap.Create(
-			appConf.heightmapPath(),
-			appConf.heightmapMapWidth(),
-			appConf.heightmapMapLength(),
-			appConf.heightmapMapHeightMin(),
-			appConf.heightmapMapHeightMax()))
-	{
-		assert(0 && "ERROR! sim_Combine: failed to load height map.\n");
-	}
-}
-
 void ParseCommand(int argc, _TCHAR* argv[])
 {
 	if (argc < 2) {
@@ -498,20 +487,23 @@ void ParseCommand(int argc, _TCHAR* argv[])
 
 	appConf.parseConfig(argv[1]);
 	delT = appConf.delT();
-	aml_path = appConf.amlPath();
-	aml_name = appConf.amlName();
-	aml_T0.setIdentity();
-	aml_T0.linear() = appConf.aml_R0();
-	aml_T0.translation() = appConf.aml_r0();
 	eml_path = appConf.emlPath();
 	eml_name = appConf.emlName();
 	eml_T0.setIdentity();
 	eml_T0.linear() = appConf.eml_R0();
 	eml_T0.translation() = appConf.eml_r0();
-	controlPort = appConf.netControlPort();
 	listenPort = appConf.netSimulationPort();
 	bEnvironment = appConf.enableEml();
-	bKinematics = appConf.amlIsStatic();
+
+	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
+	{
+		aml_path[uav_no] = appConf.amlPath(uav_no);
+		aml_name[uav_no] = appConf.amlName(uav_no);
+		aml_T0[uav_no].setIdentity();
+		aml_T0[uav_no].linear() = appConf.aml_R0(uav_no);
+		aml_T0[uav_no].translation() = appConf.aml_r0(uav_no);
+		controlPort[uav_no] = appConf.netControlPort(uav_no);
+	}
 }
 
 void PrintInstruction()

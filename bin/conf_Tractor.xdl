@@ -3,55 +3,35 @@
 
   <credit address="www.simlab.co.kr" creator="Sean Yi" date="2015/10/1" description="application parameters for tractor simulator " email="seanyi@simlab.co.kr"/>
 
-  <property name="HMAP_H_max" value="10"/>
+  <property name="aml1_R0" value="0 -1 0 1 0 0 0 0 1"/>
 
-  <property name="HMAP_H_min" value="-10"/>
+  <property name="aml1_enable" value="true"/>
 
-  <property name="HMAP_L" value="100"/>
+  <property name="aml1_isStatic" value="true"/>
 
-  <property name="HMAP_PATH" value="models\Environment\Ground\heightmaps\100x100.bmp"/>
+  <property name="aml1_name" value="UAV1"/>
 
-  <property name="HMAP_W" value="100"/>
+  <property name="aml1_path" value="models/Mobile/Tractor/tractor_combine.aml"/>
 
-  <property name="WP_COLOR" value="1.0 1.0 0.0 1.0"/>
+  <property name="aml1_q0" value="0"/>
 
-  <property name="WP_LABEL_COLOR" value="1.0 1.0 0.0 1.0"/>
+  <property name="aml1_r0" value="0 0 0.75"/>
 
-  <property name="WP_LABEL_FORMAT" value="wp_%d"/>
+  <property name="aml2_R0" value="1 0 0 0 1 0 0 0 1"/>
 
-  <property name="WP_LABEL_POS" value="0.0 0.0 0.5"/>
+  <property name="aml2_enable" value="true"/>
 
-  <property name="WP_LABEL_SIZE" value="50"/>
+  <property name="aml2_isStatic" value="true"/>
 
-  <property name="WP_LINE_COLOR" value="1.0 1.0 0.0 1.0"/>
+  <property name="aml2_name" value="UAV2"/>
 
-  <property name="WP_LINE_WIDTH" value="3"/>
+  <property name="aml2_path" value="models/Mobile/Tractor/tractor_combine.aml"/>
 
-  <property name="WP_OFFSET_FROM_GROUND" value="1.0"/>
+  <property name="aml2_q0" value="0"/>
 
-  <property name="WP_SIZE" value="0.2"/>
+  <property name="aml2_r0" value="10 0 0.75"/>
 
-  <property name="aml_R0" value="0 -1 0 1 0 0 0 0 1"/>
-
-  <property name="aml_enable" value="true"/>
-
-  <property name="aml_isStatic" value="true"/>
-
-  <property name="aml_name" value="Tractor"/>
-
-  <property name="aml_path" value="models/Mobile/Tractor/tractor_combine.aml"/>
-
-  <property name="aml_q0" value="0"/>
-
-  <property name="aml_r0" value="0 0 0.75"/>
-
-  <property name="control_enable" value="true"/>
-
-  <property name="control_name" value="MobileController"/>
-
-  <property name="control_path" value="controls/rControlDiffWheelKinematic.xdl"/>
-
-  <property name="debug_control_local_enable" value="true"/>
+  <property name="debug_control_local_enable" value="false"/>
 
   <property name="eml_R0" value="1 0 0 0 1 0 0 0 1"/>
 
@@ -63,21 +43,35 @@
 
   <property name="eml_r0" value="0 0 0"/>
 
-  <property name="net_port_control" value="5250"/>
+  <property name="net_port_control1" value="5251"/>
+
+  <property name="net_port_control2" value="5252"/>
 
   <property name="net_port_simulation" value="5150"/>
 
-  <property name="plot_acc_sensor" value="false"/>
+  <property name="plot1_acc_sensor" value="false"/>
 
-  <property name="plot_gps_sensor" value="true"/>
+  <property name="plot1_gps_sensor" value="true"/>
 
-  <property name="plot_gyro_sensor" value="false"/>
+  <property name="plot1_gyro_sensor" value="false"/>
 
-  <property name="plot_lateral_force" value="true"/>
+  <property name="plot1_lateral_force" value="true"/>
 
-  <property name="plot_position" value="true"/>
+  <property name="plot1_position" value="true"/>
 
-  <property name="plot_slipage" value="true"/>
+  <property name="plot1_slipage" value="true"/>
+
+  <property name="plot2_acc_sensor" value="false"/>
+
+  <property name="plot2_gps_sensor" value="true"/>
+
+  <property name="plot2_gyro_sensor" value="false"/>
+
+  <property name="plot2_lateral_force" value="true"/>
+
+  <property name="plot2_position" value="true"/>
+
+  <property name="plot2_slipage" value="true"/>
 
   <property name="time_step" value="0.01"/>
 

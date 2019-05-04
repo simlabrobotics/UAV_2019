@@ -10,8 +10,8 @@
     <property name="GRID_HEIGHT" value="0.01"/>
     <property name="GRID_HEIGHT_OCCUPIED" value="0.02"/>
     <property name="GRID_VISIBLE" value="true"/>
-    <property name="GRID_VISIBLE_NORMAL" value="true"/>
-    <property name="GRID_VISIBLE_OCCUPIED" value="true"/>
+    <property name="GRID_VISIBLE_NORMAL" value="false"/>
+    <property name="GRID_VISIBLE_OCCUPIED" value="false"/>
     <property name="HMAP_H_max" value="10"/>
     <property name="HMAP_H_min" value="-10"/>
     <property name="HMAP_L" value="100"/>

@@ -88,6 +88,7 @@ typedef struct sParameter
 	float			param2;
 	float			param3;
 } PARAMETER;
+
 enum eParamType
 {
 	PTYPE_lateral_resistance = 1,
