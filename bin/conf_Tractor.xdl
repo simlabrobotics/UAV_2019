@@ -31,7 +31,7 @@
 
   <property name="aml2_r0" value="10 0 0.75"/>
 
-  <property name="debug_control_local_enable" value="false"/>
+  <property name="debug_control_local_enable" value="true"/>
 
   <property name="eml_R0" value="1 0 0 0 1 0 0 0 1"/>
 
@@ -51,27 +51,27 @@
 
   <property name="plot1_acc_sensor" value="false"/>
 
-  <property name="plot1_gps_sensor" value="true"/>
+  <property name="plot1_gps_sensor" value="false"/>
 
   <property name="plot1_gyro_sensor" value="false"/>
 
-  <property name="plot1_lateral_force" value="true"/>
+  <property name="plot1_lateral_force" value="false"/>
 
   <property name="plot1_position" value="true"/>
 
-  <property name="plot1_slipage" value="true"/>
+  <property name="plot1_slipage" value="false"/>
 
   <property name="plot2_acc_sensor" value="false"/>
 
-  <property name="plot2_gps_sensor" value="true"/>
+  <property name="plot2_gps_sensor" value="false"/>
 
   <property name="plot2_gyro_sensor" value="false"/>
 
-  <property name="plot2_lateral_force" value="true"/>
+  <property name="plot2_lateral_force" value="false"/>
 
   <property name="plot2_position" value="true"/>
 
-  <property name="plot2_slipage" value="true"/>
+  <property name="plot2_slipage" value="false"/>
 
   <property name="time_step" value="0.01"/>
 

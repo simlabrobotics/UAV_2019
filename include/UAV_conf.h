@@ -50,7 +50,7 @@ public:
 			_aml_R0[uav_no].setIdentity();
 			_aml_r0[uav_no].setZero();
 
-			_net_port_control[uav_no] = 5250 + i + 1;
+			_net_port_control[uav_no] = 5250 + uav_no + 1;
 
 			_plot_position_enabled[uav_no] = false;
 			_plot_velocity_enabled[uav_no] = false;
