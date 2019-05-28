@@ -94,6 +94,12 @@ void SubtractVec(float* c, const float* a, const float* b)
 		c[i] = a[i] - b[i];
 }
 
+double NormAngleBtwPi(double x)
+{
+	x = fmod(x + M_PI, 2 * M_PI);
+	if (x < 0) x += 2 * M_PI;
+	return x - M_PI;
+}
 
 namespace rlab {
 namespace plugin {
@@ -275,14 +281,34 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	{
 	case UAVDRV_MONITORPORT_POSE:
 	{
-		if (len >= 5 * sizeof(float))
+		if (len >= 6 * sizeof(float))
 		{
-			float* value = (float*)buffer;
-			value[0] = _x;
-			value[1] = _y;
-			value[2] = _psi;
-			value[3] = _pitch;
-			value[4] = _roll;
+			_lock.lock();
+			{
+				float* value = (float*)buffer;
+				value[0] = _x;
+				value[1] = _y;
+				value[2] = _z;
+				value[3] = NormAngleBtwPi(_psi);
+				value[4] = _pitch;
+				value[5] = _roll;
+			}
+			_lock.unlock();
+			return 6 * sizeof(float);
+		}
+		else if (len >= 5 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				float* value = (float*)buffer;
+				value[0] = _x;
+				value[1] = _y;
+				value[2] = NormAngleBtwPi(_psi);
+				value[3] = _pitch;
+				value[4] = _roll;
+			}
+			_lock.unlock();
+			return 5 * sizeof(float);
 		}
 		else if (len >= 3 * sizeof(float))
 		{
@@ -291,7 +317,7 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 				float* value = (float*)buffer;
 				value[0] = _x;
 				value[1] = _y;
-				value[2] = _psi;
+				value[2] = NormAngleBtwPi(_psi);
 			}
 			_lock.unlock();
 			return 3 * sizeof(float);

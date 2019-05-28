@@ -3,8 +3,8 @@
 
   <credit address="" creator="" date="" description="" email=""/>
 
-  <body R="1 0 0 0 1 0 0 0 1" com="-1.075 0 -0.3" custom_physics="" friction="0 0" inertia="0.01 0.01 0.01 0 0 0" inertia_frame="COM" mass="0.1" name="Tool" r="0 0 0" restitution="0">
-    <render R="-1 0 0 0 0 1 0 1 0" name="tool_combine.wrl" r="-0.535 -2.1 -0.04">
+  <body R="1 0 0 0 1 0 0 0 1" com="1.075 0 0.3" custom_physics="" friction="0 0" inertia="0.01 0.01 0.01 0 0 0" inertia_frame="COM" mass="0.1" name="Tool" r="0 0 0" restitution="0">
+    <render R="1 0 0 0 0 1 0 -1 0" name="tool_combine.wrl" r="0.535 -2.1 0.04">
       <child R="1 0 0 0 1 0 0 0 1" name="__UNDEFIED__" r="0 0 0">
         <shape>
           <appearance>
@@ -103,7 +103,7 @@
       </child>
     </render>
     <device R="1 0 0 0 1 0 0 0 1" dml="devices\GRID_TOOL_combine.dml" name="GRID_TOOL" r="0 0 0"/>
-    <ucs R="1 0 0 0 1 0 0 0 1" name="Tool" r="0 1.4 0"/>
+    <ucs R="-1 0 0 0 1 0 0 0 -1" name="Tool" r="0 1.4 0"/>
   </body>
 
 </Subsys>

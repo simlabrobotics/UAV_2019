@@ -16,12 +16,11 @@
 #include <rxSDK/rxSDK.h>
 using namespace rlab;
 using namespace rlab::rxsdk;
-#include "rLabServer.h"
 #include "UAV_conf.h"
 #include "UAV_cmd.h"
+#include "UAV.h"
 
 UAVConf appConf;
-rLabServer svr;
 
 bool bContact = true;		// Enables/disables contact dynamics.
 bool bQuit = false;			// Set this flag true to quit this program.
@@ -34,7 +33,7 @@ string_type aml_path[MAX_UAV_NUM];
 string_type aml_name[MAX_UAV_NUM];
 HTransform aml_T0[MAX_UAV_NUM];
 dVector aml_q0[MAX_UAV_NUM];
-rxSystem* sys[MAX_UAV_NUM];
+UAV* uav[MAX_UAV_NUM];
 string_type eml_path = _T("models/Environment/Ground/ground.eml");
 string_type eml_name = _T("Environment");
 HTransform eml_T0;
@@ -50,7 +49,6 @@ void MyControlCallback(rTime time, void* data);
 void GPSDataCallback(std::vector<double>& data);
 void GyroDataCallback(std::vector<double>& data);
 void AccDataCallback(std::vector<double>& data);
-void VehicleDataCallback(std::vector<double>& data);
 void SlipDataCallback(std::vector<double>& data);
 void SlipDataCallbackTracked(std::vector<double>& data);
 void LateralForceDataCallback(std::vector<double>& data);
@@ -77,23 +75,28 @@ int _tmain(int argc, _TCHAR* argv[])
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
 		if (appConf.enableAml(uav_no))
-		{
-			_tprintf(_T("Loading... (%s)\n"), aml_path[uav_no].c_str());
-			if (appConf.amlIsStatic(uav_no))
-				sys[uav_no] = rCreateStaticSystem(aml_path[uav_no], aml_name[uav_no], aml_T0[uav_no], aml_q0[uav_no]);
-			else
-				sys[uav_no] = rCreateSystem(aml_path[uav_no], aml_name[uav_no], aml_T0[uav_no], aml_q0[uav_no]);
-		}
+			uav[uav_no] = new UAV(aml_name[uav_no], aml_path[uav_no], aml_T0[uav_no], aml_q0[uav_no], appConf.amlIsStatic(uav_no));
 		else
-		{
-			sys[uav_no] = NULL;
-		}
+			uav[uav_no] = NULL;
 	}
 
 	if (bEnvironment)
+	{
 		env = rCreateEnvironment(eml_path, eml_name, eml_T0);
 
-//	svr.bindSystem(sys, env);
+		for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
+		{
+			if (uav[uav_no])
+			{
+				rxSystem* WC = env->findSystem(appConf.emlWCName(uav_no));
+				if (WC)
+				{
+					uav[uav_no]->setDeviceWP(WC->findDevice(_T("WP")));
+					uav[uav_no]->setDeviceWC(WC->findDevice(_T("WC")));
+				}
+			}
+		}
+	}
 
 	rInitializeEx(true, true);
 
@@ -106,11 +109,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else 
 	{
-		// initialize rLabServer
-		//svr.bindSystem(sys, env);
-//		svr.setTimeStep(delT);
-//		svr.create(controlPort, kaiON_MESSAGE | kaiON_ACCEPT | kaiON_CLOSE, true);
-//		svr.run(true);
+		for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
+		{
+			if (uav[uav_no])
+			{
+				uav[uav_no]->startServer(appConf.netControlPort(uav_no));
+				//uav[uav_no]->bindSystem(sys, env);
+			}
+		}
 	}
 
 	SetupDAQ();
@@ -125,7 +131,10 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	if (!appConf.enableDebugControlLocal()) 
 	{
-//		svr.stop();
+		for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
+		{
+			uav[uav_no]->stopServer();
+		}
 	}
 	DESTROY_PHYSICS_WORLD();
 	DESTROY_DATA_ACQUISITION();
@@ -191,10 +200,10 @@ void MyControlCallback(rTime time, void* data)
 {
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (!sys[uav_no])
+		if (!uav[uav_no])
 			continue;
 
-		rxDevice* carDrive = sys[uav_no]->findDevice(_T("CarDrive"));
+		rxDevice* carDrive = uav[uav_no]->findDevice(_T("CarDrive"));
 		if (carDrive)
 		{
 			float val[2];
@@ -203,12 +212,24 @@ void MyControlCallback(rTime time, void* data)
 			carDrive->writeDeviceValue(val, sizeof(val), UAVDRV_DATAPORT_SET_VEL_TARGET);
 		}
 
-		rxDevice* pto = sys[uav_no]->findDevice(_T("PTO"));
+		rxDevice* pto = uav[uav_no]->findDevice(_T("PTO"));
 		if (pto)
 		{
 			float val;
 			val = pto_des;
 			pto->writeDeviceValue(&val, sizeof(val));
+		}
+
+
+		rxSystem* WC = env->findSystem(appConf.emlWCName(uav_no));
+		if (WC)
+		{
+			rxDevice* wc = WC->findDevice(_T("WC"));
+			if (wc)
+			{
+				int activated = (pto_des > 0 ? 1 : 0);
+				wc->writeDeviceValue(&activated, sizeof(int));
+			}
 		}
 	}
 
@@ -226,218 +247,73 @@ void MyControlCallback(rTime time, void* data)
 
 void PositionDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[5];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotPosition(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("CarDrive"));
-			if (dev && dev->monitorDeviceValue(val, sizeof(float) * 5, UAVDRV_MONITORPORT_POSE) > 0)
-			{
-				data.push_back(val[0]);
-				data.push_back(val[1]);
-				data.push_back(val[2]);
-				data.push_back(val[3]);
-				data.push_back(val[4]);
-			}
-			else
-			{
-				float nil(0.0f);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotPosition(uav_no))
+			uav[uav_no]->collectPositionData(data);
 	}
 }
 
 void VelocityDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[3];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotVelocity(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("CarDrive"));
-			if (dev && dev->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_VELOCITY) > 0)
-			{
-				data.push_back(val[0]);
-				data.push_back(val[1]);
-				data.push_back(val[2] * RADIAN);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotVelocity(uav_no))
+			uav[uav_no]->collectVelocityData(data);
 	}
 }
 
 void GPSDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[3];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotGPSSensor(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("gps"));
-			if (dev && dev->readDeviceValue(val, sizeof(float) * 3) > 0)
-			{
-				data.push_back(val[0]);
-				data.push_back(val[1]);
-				data.push_back(val[2]);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotGPSSensor(uav_no))
+			uav[uav_no]->collectGPSData(data);
 	}
 }
 
 void GyroDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[6];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotGyroSensor(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("gyro"));
-			if (dev && dev->readDeviceValue(val, sizeof(float) * 6) > 0)
-			{
-				val[4] *= -1.0f;
-				val[3] += M_PI;
-				if (val[3] > M_PI) val[3] -= 2 * M_PI;
-				data.push_back(val[5] * RADIAN);
-				data.push_back(val[4] * RADIAN);
-				data.push_back(val[3] * RADIAN);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotGyroSensor(uav_no))
+			uav[uav_no]->collectGyroData(data);
 	}
 }
 
 void AccDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[3];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotAccSensor(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("acc"));
-			if (dev && dev->readDeviceValue(val, sizeof(float) * 3) > 0)
-			{
-				data.push_back(val[0]);
-				data.push_back(val[1]);
-				data.push_back(val[2]);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotAccSensor(uav_no))
+			uav[uav_no]->collectAccData(data);
 	}
 }
 
 void SlipDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[3];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotSlippage(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("CarDrive"));
-
-			if (dev && dev->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_SLIP_ANGLE) > 0)
-			{
-				data.push_back(val[0] * RADIAN); // beta
-				data.push_back(val[1] * RADIAN);
-				data.push_back(val[2] * RADIAN);
-			}
-			else
-			{
-				float nil(0.0f);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-			}
-
-			if (dev && dev->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_POSE_LOCAL) > 0)
-			{
-				data.push_back(val[0] * RADIAN); // steer angle
-				data.push_back(val[1]);  // current forward(longitudinal) velocity
-				data.push_back(val[2]);  // current lateral velocity
-			}
-			else
-			{
-				float nil(0.0f);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotSlippage(uav_no))
+			uav[uav_no]->collectSlipData(data);
 	}
 }
 
 void SlipDataCallbackTracked(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[3];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotSlippageTracked(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("CarDrive"));
-
-			if (dev && dev->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_SLIP_ANGLE) > 0)
-			{
-				data.push_back(val[2] * RADIAN);
-				data.push_back(val[0]);
-				data.push_back(val[1]);
-			}
-			else
-			{
-				float nil(0.0f);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-			}
-
-			if (dev && dev->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_VELOCITY) > 0)
-			{
-				data.push_back(val[2] * RADIAN); // angular velocity
-				data.push_back(val[0]);  // v_x_global
-				data.push_back(val[1]);  // v_y_global
-			}
-			else
-			{
-				float nil(0.0f);
-				data.push_back(nil);
-				data.push_back(nil);
-				data.push_back(nil);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotSlippageTracked(uav_no))
+			uav[uav_no]->collectSlipDataTracked(data);
 	}
 }
 
 void LateralForceDataCallback(std::vector<double>& data)
 {
-	rxDevice* dev;
-	float val[2];
-
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] && appConf.enablePlotLateralForce(uav_no))
-		{
-			dev = sys[uav_no]->findDevice(_T("CarDrive"));
-			if (dev && dev->readDeviceValue(val, sizeof(float) * 2, UAVDRV_MONITORPORT_LATERAL_FORCE) > 0)
-			{
-				data.push_back(val[0]);
-				data.push_back(val[1]);
-			}
-		}
+		if (uav[uav_no] && appConf.enablePlotLateralForce(uav_no))
+			uav[uav_no]->collectLateralForceData(data);
 	}
 }
 
@@ -452,7 +328,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotPosition(uav_no))
 		{
 			if (!plotCreated) {
@@ -462,16 +338,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].x(m)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].x(m)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].yaw(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].pitch(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].roll(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesPositionPlot(datanames);
 		}
 	}
 	if (plotCreated)
@@ -481,7 +348,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotVelocity(uav_no))
 		{
 			if (!plotCreated) {
@@ -491,12 +358,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].vel_x(m/s)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].vel_x(m/s)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].yaw rate(deg/s)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesVelocityPlot(datanames);
 		}
 	}
 	if (plotCreated)
@@ -506,7 +368,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotGPSSensor(uav_no))
 		{
 			if (!plotCreated) {
@@ -516,12 +378,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].longitude(m)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].latitude(m)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].altitude(m)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesGPSPlot(datanames);
 		}
 	}
 	if (plotCreated)
@@ -531,7 +388,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotGyroSensor(uav_no))
 		{
 			if (!plotCreated) {
@@ -541,12 +398,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].yaw(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].pitch(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].roll(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesGyroPlot(datanames);
 		}
 	}
 	if (plotCreated)
@@ -556,7 +408,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotAccSensor(uav_no))
 		{
 			if (!plotCreated) {
@@ -566,12 +418,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].acc_x(m/s^2)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].acc_y(m/s^2)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].acc_z(m/s^2)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesAccPlot(datanames);
 		}
 	}
 	if (plotCreated)
@@ -581,7 +428,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotSlippage(uav_no))
 		{
 			if (!plotCreated) {
@@ -591,18 +438,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].beta slip angle(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].front slip angle(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].rear slip angle(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].steer angle(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].velocity(m/s)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].lateral velocity(m/s)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesSlipPlot(datanames);
 		}
 	}
 	if (plotCreated)
@@ -612,7 +448,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotSlippageTracked(uav_no))
 		{
 			if (!plotCreated) {
@@ -622,18 +458,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].slip angle(deg)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].slip ratio(left, i_L)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].slip ratio(left, i_R)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].angular velocity(deg/s)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].linear velocity in global x direction(m/s)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].linear velocity in global y direction(m/s)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesSlipPlotTracked(datanames);
 		}
 	}
 	if (plotCreated)
@@ -643,7 +468,7 @@ void SetupDAQ()
 	plotCreated = false;
 	for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
 	{
-		if (sys[uav_no] &&
+		if (uav[uav_no] &&
 			appConf.enablePlotLateralForce(uav_no))
 		{
 			if (!plotCreated) {
@@ -653,10 +478,7 @@ void SetupDAQ()
 				plotCreated = true;
 			}
 
-			_stprintf_s(dataname, 256, _T("UAV[%d].F_front(N)"), uav_no + 1);
-			datanames.push_back(dataname);
-			_stprintf_s(dataname, 256, _T("UAV[%d].F_rear(N)"), uav_no + 1);
-			datanames.push_back(dataname);
+			uav[uav_no]->datanamesLateralForcePlot(datanames);
 		}
 	}
 	if (plotCreated)

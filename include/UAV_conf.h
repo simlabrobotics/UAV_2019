@@ -50,6 +50,8 @@ public:
 			_aml_R0[uav_no].setIdentity();
 			_aml_r0[uav_no].setZero();
 
+			_eml_wc_name[uav_no] = _T("l");
+
 			_net_port_control[uav_no] = 5250 + uav_no + 1;
 
 			_plot_position_enabled[uav_no] = false;
@@ -168,6 +170,14 @@ public:
 			_eml_R0(2, 0) = R[6]; _eml_R0(2, 1) = R[7]; _eml_R0(2, 2) = R[8];
 		}
 
+		for (int uav_no = 0; uav_no < MAX_UAV_NUM; uav_no++)
+		{
+			_stprintf_s(prop_name, 256, _T("eml_wc%d_name"), uav_no + 1);
+			prop = getProperty(prop_name);
+			if (prop)
+				_eml_wc_name[uav_no] = prop;
+		}
+
 		UAVCONF_READ_PROP_INT(_T("net_port_simulation"), _net_port_simulation);
 
 		UAVCONF_READ_PROP_BOOLEAN(_T("debug_control_local_enable"), _debug_control_local_enable);
@@ -194,6 +204,7 @@ public:
 	const string_type& emlName() const { return _eml_name; }
 	const Displacement& eml_r0() const { return _eml_r0; }
 	const Rotation& eml_R0() const { return _eml_R0; }
+	const string_type& emlWCName(unsigned int uav_no) const { return _eml_wc_name[uav_no]; }
 
 	bool enablePlotPosition(unsigned int uav_no) const { return _plot_position_enabled[uav_no]; }
 	bool enablePlotVelocity(unsigned int uav_no) const { return _plot_velocity_enabled[uav_no]; }
@@ -229,6 +240,7 @@ private:
 	string_type _eml_name;
 	Displacement _eml_r0;
 	Rotation _eml_R0;
+	string_type _eml_wc_name[MAX_UAV_NUM];
 	// plot
 	bool _plot_position_enabled[MAX_UAV_NUM];
 	bool _plot_velocity_enabled[MAX_UAV_NUM];

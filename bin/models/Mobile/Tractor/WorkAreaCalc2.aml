@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Subsys xmlns="http://www.simlab.co.kr/2008/AML" name="WorkAreaCalc2.aml" selfcollision="true" ver="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/AML AML.xsd">
+
+  <credit address="" creator="" date="" description="" email=""/>
+
+  <body R="1 0 0 0 1 0 0 0 1" com="0 0 0" custom_physics="" friction="0 0" inertia="0.01 0.01 0.01 0 0 0" inertia_frame="COM" mass="0.1" name="WorkAreaCalculator" r="0 0 0" restitution="0">
+    <render R="1 0 0 0 1 0 0 0 1" name="Box" r="0 0 0">
+      <shape>
+        <appearance>
+          <material ambient="0.200000002980232" diffuse="0.8 0.8 0.8" emissive="0 0 0" enabled="true" shininess="0" specular="0 0 0" transparency="0"/>
+          <texture image="" lightmap="" normalmap="" repeatS="false" repeatT="false" specularmap=""/>
+          <textransform center="0 0" rotation="0" scale="1 1" translation="0 0"/>
+        </appearance>
+        <geometry approx="ASIS" type="BOX">
+          <box x="0.1" y="0.1" z="0.1"/>
+        </geometry>
+      </shape>
+    </render>
+    <device R="1 0 0 0 1 0 0 0 1" dml="devices\WorkArea2.dml" name="WC" r="0 0 0"/>
+    <device R="1 0 0 0 1 0 0 0 1" dml="devices\Waypoint2.dml" name="WP" r="0 0 0"/>
+  </body>
+
+</Subsys>

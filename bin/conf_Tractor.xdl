@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <DLL xmlns="http://www.simlab.co.kr/2008/XDL" name="rSimulator" path="" type="USER_JOINT" ver="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/XDL XDL.xsd">
 
-  <credit address="www.simlab.co.kr" creator="Sean Yi" date="2015/10/1" description="application parameters for tractor simulator " email="seanyi@simlab.co.kr"/>
+  <credit address="www.wonikrobotics.com" creator="Sean Yi" date="2019/5/27" description="application parameters for tractor simulator " email="seanyi@wonik.com"/>
 
   <property name="aml1_R0" value="0 -1 0 1 0 0 0 0 1"/>
 
@@ -11,7 +11,7 @@
 
   <property name="aml1_name" value="UAV1"/>
 
-  <property name="aml1_path" value="models/Mobile/Tractor/tractor_combine.aml"/>
+  <property name="aml1_path" value="models/Mobile/Tractor/tractor1_rotavator.aml"/>
 
   <property name="aml1_q0" value="0"/>
 
@@ -19,13 +19,13 @@
 
   <property name="aml2_R0" value="1 0 0 0 1 0 0 0 1"/>
 
-  <property name="aml2_enable" value="true"/>
+  <property name="aml2_enable" value="false"/>
 
   <property name="aml2_isStatic" value="true"/>
 
   <property name="aml2_name" value="UAV2"/>
 
-  <property name="aml2_path" value="models/Mobile/Tractor/tractor_combine.aml"/>
+  <property name="aml2_path" value="models/Mobile/Tractor/tractor2_rotavator.aml"/>
 
   <property name="aml2_q0" value="0"/>
 
@@ -39,9 +39,13 @@
 
   <property name="eml_name" value="Environment"/>
 
-  <property name="eml_path" value="models/Environment/Ground/terrain.eml"/>
+  <property name="eml_path" value="models/Mobile/Tractor/terrain.eml"/>
 
   <property name="eml_r0" value="0 0 0"/>
+
+  <property name="eml_wc1_name" value="Environment::WorkAreaCalc1.aml"/>
+
+  <property name="eml_wc2_name" value="Environment::WorkAreaCalc2.aml"/>
 
   <property name="net_port_control1" value="5251"/>
 
@@ -59,7 +63,7 @@
 
   <property name="plot1_position" value="true"/>
 
-  <property name="plot1_slipage" value="false"/>
+  <property name="plot1_slippage" value="true"/>
 
   <property name="plot2_acc_sensor" value="false"/>
 
@@ -71,7 +75,7 @@
 
   <property name="plot2_position" value="true"/>
 
-  <property name="plot2_slipage" value="false"/>
+  <property name="plot2_slippage" value="false"/>
 
   <property name="time_step" value="0.01"/>
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Device xmlns="http://www.simlab.co.kr/2008/DML" name="Kinematic motor" rdd="VIRTUAL" target="JOINT" type="ACTUATOR" ver="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.simlab.co.kr/2008/DML DML.xsd">
+
+  <credit address="" creator="" date="" description="" email=""/>
+
+  <specification byte="4" period="1000" physics="..\..\..\devices\rDeviceKinematicMotor.rdd"/>
+
+</Device>

@@ -9,6 +9,17 @@
 
 #include <rlab/type.h>
 
+enum ePredefinedHeightMapType
+{
+	HM_FLAT,
+	HM_SLOPE_X_INC,
+	HM_SLOPE_Y_INC,
+	HM_SLOPE_XY_INC
+};
+
+#define PREDEFINE_HBITMAP_WIDTH  101
+#define PREDEFINE_HBITMAP_LENGTH 101
+
 class HeightMap
 {
 public:
@@ -16,9 +27,13 @@ public:
 	~HeightMap();
 
 	bool Create(const string_type& path, float width, float length, float height_min, float height_max);
+	bool Create(const ePredefinedHeightMapType hm_type, float width, float length, float height_min, float height_max);
 	bool GetHeight(float x, float y, float& height);
 	bool GetNormal(float x, float y, float normal[3]);
 	bool GetNormalEx(float x, float y, int wnd_size, float normal[3]);
+
+private:
+	void _CalculateVertexNormal();
 
 private:
 	string_type				_path;
@@ -26,9 +41,9 @@ private:
 	float					_map_length;
 	float					_map_height_min;
 	float					_map_height_max;
-	float					_map_width_scale;
-	float					_map_length_scale;
-	float					_map_height_scale;
+	float					_map_width_scale_mpp;	// scale in meter per pixel
+	float					_map_length_scale_mpp;
+	float					_map_height_scale_mpp;
 	float*					_heights;				// vertex height(z)
 	float*					_normals;				// vertex normal
 	int						_bmp_pixel_width;
