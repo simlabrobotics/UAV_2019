@@ -8,6 +8,32 @@
 #include "rDeviceTractorDriveCmd.h"
 #include "UAV_def.h"
 
+#define READ_PROP_BOOLEAN(prop_name, var_name, def_val)	\
+	prop = getProperty(prop_name);						\
+	if (prop) {											\
+		if (_tcsicmp(prop, _T("true")) == 0 ||			\
+			_tcsicmp(prop, _T("yes")) == 0)				\
+			(##var_name) = true;						\
+		else											\
+			(##var_name) = false;						\
+	}													\
+	else (##var_name) = def_val;
+
+#define READ_PROP_INT(prop_name, var_name, def_val)		\
+	prop = getProperty(prop_name);						\
+	if (prop) (##var_name) = _tstoi(prop);				\
+	else (##var_name) = def_val;
+
+#define READ_PROP_REAL(prop_name, var_name, def_val)	\
+	prop = getProperty(prop_name);						\
+	if (prop) (##var_name) = _tstof(prop);				\
+	else (##var_name) = def_val;
+
+#define READ_PROP_STR(prop_name, var_name, def_val)		\
+	prop = getProperty(prop_name);						\
+	if (prop) (##var_name) = prop;						\
+	else (##var_name) = def_val;
+
 #define A(i, j)		A_[3*(i) + (j)]
 #define B(i, j)		B_[3*(i) + (j)]
 #define At(i, j)	A_[3*(j) + (i)]
@@ -112,15 +138,9 @@ RD_IMPLE_FACTORY(TractorDrive)
 rDeviceTractorDrive::rDeviceTractorDrive()
 	: _nodeid(INVALID_RID)
 	, _dT(0.001), _prevTime(0)
-	, _distance_btw_axes(1)
-	, _front_lwheel(INVALID_RID), _front_rwheel(INVALID_RID), _front_wheel_radius(1)
-	, _rear_lwheel(INVALID_RID), _rear_rwheel(INVALID_RID), _rear_wheel_radius(1)
-	, _steer_lwheel(INVALID_RID), _steer_rwheel(INVALID_RID)
 	, _front_ltheta(0), _front_rtheta(0)
 	, _rear_ltheta(0), _rear_rtheta(0)
 	, _steer_ltheta(0), _steer_rtheta(0)
-	, _steer_limit(-1), _steer_velocity_limit(-1)
-	, _velocity_limit(-1), _acceleration_limit(-1)
 	, _v_des(0), _theta_des(0), _v(0), _theta(0)
 	, _vx(0), _vy(0)
 	, _x(0), _y(0), _z(0), _psi(0), _pitch(0), _roll(0)
@@ -129,9 +149,8 @@ rDeviceTractorDrive::rDeviceTractorDrive()
 	, _beta(0), _betadot(0)
 	, _betaf(0), _betar(0)
 	, _Ff(0), _Fr(0)
-	, _slip_ratio(0)
-	, _v_threshod_to_apply_slippage(0.3f)
 	, _hmap_normal_window_size(1)
+	, _ax_slope(0), _ay_slope(0)
 {
 	sample_init();
 }
@@ -403,6 +422,21 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
+	case UAVDRV_MONITORPORT_SLIP_3D:
+	{
+		if (len >= 2 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				float* value = (float*)buffer;
+				value[0] = _ax_slope;
+				value[1] = _ay_slope;
+			}
+			_lock.unlock();
+		}
+	}
+	break;
+
 	default:
 		// Exception! Unknown data port.
 		return 0;
@@ -425,6 +459,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 
 		/////////////////////////////////////////////////////////////////////
 		// calcurate current velocity(_v) considering velocity and acceleration limit
+		//
 		if (_acceleration_limit > 0)
 		{
 			float vdot_des = (_v_des - _v) / _dT;
@@ -442,6 +477,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 
 		/////////////////////////////////////////////////////////////////////
 		// calcurate current steering angle(_theta) considering velocity and position limit
+		//
 		if (_steer_velocity_limit > 0)
 		{
 			float thetadot_des = (_theta_des - _theta) / _dT;
@@ -459,6 +495,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 
 		/////////////////////////////////////////////////////////////////////
 		// calcurate wheel velocity and angle
+		//
 		float w_front_wheel = _v / _front_wheel_radius;
 		float w_rear_wheel = _v / _rear_wheel_radius;
 
@@ -574,7 +611,43 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 			}
 		}
 
+
+		/////////////////////////////////////////////////////////////////////
+		// calcurate slippage due to soid deformation wrt vehicle pose,
+		// and apply it to update vehicle position
+		//
+		float k_sign = (sample_uniform01() > 0.5 ? 1 : -1);
+		float slope_slip_ratio = sample_quasi_normal(_s_mean, _s_std); 
+		float tire_b;
+		std::vector<float> a_slope;
+		std::vector<float> slope_angles;
+		slope_angles.push_back(_roll);
+		slope_angles.push_back(_pitch);
+		for_each(slope_angles.begin(), slope_angles.end(), [&](float slope) {
+			tire_b = (_m * _g * cos(slope) / (4.0 * _tire_b * _tire_w * (_k_c / _tire_w + _k_pi)));
+			tire_b = pow(tire_b, (1.0 / _n));
+			tire_b = pow((_tire_r - tire_b), 2.0);
+			tire_b = sqrt(_tire_r * _tire_r - tire_b);
+			
+			float a = _g * sin(slope) - (tire_b * _tire_w / _m) * ((_c + _m * _g * cos(slope) * tan(_pi)) * (1 + k_sign * exp(-slope_slip_ratio * _tire_w / _K)));
+			a_slope.push_back(a);
+		});
+		
+		_ax_slope = a_slope[0];
+		_ay_slope = a_slope[1];
+
+		float vx_slope = _ax_slope * _dT;
+		float vy_slope = _ay_slope * _dT;
+		float xdot_slope = vx_slope*cos(_psi) - vy_slope*sin(_psi);
+		float ydot_slope = vx_slope*sin(_psi) - vy_slope*cos(_psi);
+		_x += xdot_slope*_dT;
+		_y += ydot_slope*_dT;
+
+
+
+		/////////////////////////////////////////////////////////////////////
 		// new vehicle(tractor) trasformation
+		//
 		float c = cos(_psi);
 		float s = sin(_psi);
 		float height;
@@ -639,8 +712,9 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		MultMat(R1_pitch_roll, R1_pitch, Rx);
 		_rdc.m_deviceAPI->setBodyHTransform(_nodeid, R1_pitch_roll, r1);
 
-
-		// visualizing rotating wheel and steer angles:
+		/////////////////////////////////////////////////////////////////////
+		// visualizing rotating wheel and steer angles
+		//
 		if (_front_lwheel != INVALID_RID)
 			_rdc.m_deviceAPI->setDeviceValue(_front_lwheel, &_front_ltheta, sizeof(float));
 		if (_front_rwheel != INVALID_RID)
@@ -657,93 +731,93 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 	_lock.unlock();
 }
 
+void rDeviceTractorDrive::ComputeIndicators()
+{
+
+}
+
 // initialize device parameters
 void rDeviceTractorDrive::InitParams()
 {
 	// initialize device parameters
-	const TCHAR* distance_btw_axes = getProperty(_T("distance_btw_axes"));
-	if (distance_btw_axes)
-		_distance_btw_axes = (float)_tstof(distance_btw_axes);
+	const TCHAR* prop;
 
-	const TCHAR* front_radius = getProperty(_T("front_radius"));
-	if (front_radius)
-		_front_wheel_radius = (float)_tstof(front_radius);
+	// 
+	READ_PROP_REAL(_T("distance_btw_axes"), _distance_btw_axes, 1.0f);
 
-	const TCHAR* front_lwheel = getProperty(_T("front_lwheel"));
-	if (front_lwheel)
-		_front_lwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, front_lwheel);
+	// front wheels 
+	_front_lwheel = INVALID_RID;
+	_front_rwheel = INVALID_RID;
+	READ_PROP_REAL(_T("front_radius"), _front_wheel_radius, 1.0f);
+	prop = getProperty(_T("front_lwheel"));
+	if (prop)
+		_front_lwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, prop);
+	prop = getProperty(_T("front_rwheel"));
+	if (prop)
+		_front_rwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, prop);
 
-	const TCHAR* front_rwheel = getProperty(_T("front_rwheel"));
-	if (front_rwheel)
-		_front_rwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, front_rwheel);
+	// rear wheels
+	_rear_lwheel = INVALID_RID;
+	_rear_rwheel = INVALID_RID;
+	READ_PROP_REAL(_T("rear_radius"), _rear_wheel_radius, 1.0f);
+	prop = getProperty(_T("rear_lwheel"));
+	if (prop)
+		_rear_lwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, prop);
+	prop = getProperty(_T("rear_rwheel"));
+	if (prop)
+		_rear_rwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, prop);
 
-	const TCHAR* rear_radius = getProperty(_T("rear_radius"));
-	if (rear_radius)
-		_rear_wheel_radius = (float)_tstof(rear_radius);
+	// stearing
+	_steer_lwheel = INVALID_RID;
+	_steer_rwheel = INVALID_RID;
+	prop = getProperty(_T("steer_lwheel"));
+	if (prop)
+		_steer_lwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, prop);
+	prop = getProperty(_T("steer_rwheel"));
+	if (prop)
+		_steer_rwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, prop);
+	
+	// limits (negative value means it is not active.)
+	READ_PROP_REAL(_T("steer_limit"), _steer_limit, -1.0f);
+	_steer_limit *= DEGREE;
+	READ_PROP_REAL(_T("steer_velocity_limit"), _steer_velocity_limit, -1.0f);
+	_steer_velocity_limit *= DEGREE;
 
-	const TCHAR* rear_lwheel = getProperty(_T("rear_lwheel"));
-	if (rear_lwheel)
-		_rear_lwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, rear_lwheel);
+	READ_PROP_REAL(_T("velocity_limit"), _velocity_limit, -1.0f);
+	READ_PROP_REAL(_T("acceleration_limit"), _acceleration_limit, -1.0f);
 
-	const TCHAR* rear_rwheel = getProperty(_T("rear_rwheel"));
-	if (rear_rwheel)
-		_rear_rwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, rear_rwheel);
+	//
+	READ_PROP_REAL(_T("Cf"), _Cf, -1.0f);
+	READ_PROP_REAL(_T("Cr"), _Cr, -1.0f);
+	READ_PROP_REAL(_T("Iz"), _Iz, -1.0f);
+	READ_PROP_REAL(_T("Lf"), _Lf, -1.0f);
+	READ_PROP_REAL(_T("Lr"), _Lr, -1.0f);
+	
+	READ_PROP_REAL(_T("slip_ratio"), _slip_ratio, 0.0f);
+	_slip_ratio = (float)RD_BOUND(_slip_ratio, 0, 1.0);
 
-	const TCHAR* steer_lwheel = getProperty(_T("steer_lwheel"));
-	if (steer_lwheel)
-		_steer_lwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, steer_lwheel);
+	READ_PROP_REAL(_T("velocity_threshold_to_apply_slippage"), _v_threshod_to_apply_slippage, 0.3f);
+	_v_threshod_to_apply_slippage = (float)RD_LBOUND(_v_threshod_to_apply_slippage, 1.0e-4);
 
-	const TCHAR* steer_rwheel = getProperty(_T("steer_rwheel"));
-	if (steer_rwheel)
-		_steer_rwheel = _rdc.m_deviceAPI->getDeviceID(_rdc.m_robotname, steer_rwheel);
-
-	const TCHAR* steer_limit = getProperty(_T("steer_limit"));
-	if (steer_limit)
-		_steer_limit = (float)(_tstof(steer_limit) * DEGREE);
-
-	const TCHAR* steer_velocity_limit = getProperty(_T("steer_velocity_limit"));
-	if (steer_velocity_limit)
-		_steer_velocity_limit = (float)(_tstof(steer_velocity_limit) * DEGREE);
-
-	const TCHAR* velocity_limit = getProperty(_T("velocity_limit"));
-	if (velocity_limit)
-		_velocity_limit = (float)_tstof(velocity_limit);
-
-	const TCHAR* acceleration_limit = getProperty(_T("acceleration_limit"));
-	if (acceleration_limit)
-		_acceleration_limit = (float)_tstof(acceleration_limit);
-
-	const TCHAR* Cf = getProperty(_T("Cf"));
-	if (Cf)
-		_Cf = (float)_tstof(Cf);
-
-	const TCHAR* Cr = getProperty(_T("Cr"));
-	if (Cr)
-		_Cr = (float)_tstof(Cr);
-
-	const TCHAR* Iz = getProperty(_T("Iz"));
-	if (Iz)
-		_Iz = (float)_tstof(Iz);
-
-	const TCHAR* m = getProperty(_T("m"));
-	if (m)
-		_m = (float)_tstof(m);
-
-	const TCHAR* Lf = getProperty(_T("Lf"));
-	if (Lf)
-		_Lf = (float)_tstof(Lf);
-
-	const TCHAR* Lr = getProperty(_T("Lr"));
-	if (Lr)
-		_Lr = (float)_tstof(Lr);
-
-	const TCHAR* slip_ratio = getProperty(_T("slip_ratio"));
-	if (slip_ratio)
-		_slip_ratio = (float)RD_BOUND(_tstof(slip_ratio), 0, 1.0);
-
-	const TCHAR* v_threshold = getProperty(_T("velocity_threshold_to_apply_slippage"));
-	if (v_threshold)
-		_v_threshod_to_apply_slippage = (float)RD_LBOUND(_tstof(v_threshold), 1.0e-4);
+	// tire dynamics
+	READ_PROP_REAL(_T("tire_radius(R_tire|m)"), _tire_r, 1.0f);
+	READ_PROP_REAL(_T("tire_contact_length(b_init|m)"), _tire_b, 1.0f);
+	READ_PROP_REAL(_T("tire_contact_width(w|m)"), _tire_w, 1.0f);
+	
+	// dynamics
+	READ_PROP_REAL(_T("mass(m|kg)"), _m, 1.0f);
+	READ_PROP_REAL(_T("gravitational_acc(g|m/s^2)"), _g, 1.0f);
+	
+	// soil deformation
+	READ_PROP_REAL(_T("soil_adhesiveness(c|Pa)"), _c, 1.0f);
+	READ_PROP_REAL(_T("inertial_friction_angle(pi|deg)"), _pi, 1.0f);
+	_pi *= DEGREE;
+	READ_PROP_REAL(_T("shear_modulus_of_elasticity(K|m)"), _K, 1.0f);
+	READ_PROP_REAL(_T("cohesive_modulus_of_terrain_deformation(k_c|Pa)"), _k_c, 1.0f);
+	READ_PROP_REAL(_T("frictional_modulus_of_terrain_deformation(k_pi|Pa)"), _k_pi, 1.0f);
+	READ_PROP_REAL(_T("exponent_of_terrain_deformation(n)"), _n, 1.0f);
+	READ_PROP_REAL(_T("slope_slip_ratio_mean(s_mean)"), _s_mean, 0.0f);
+	READ_PROP_REAL(_T("slope_slip_ratio_std(s_std)"), _s_std, 0.0f);
 }
 
 void rDeviceTractorDrive::InitHeightMap()
@@ -771,7 +845,7 @@ void rDeviceTractorDrive::InitHeightMap()
 void rDeviceTractorDrive::PrintParams()
 {
 	printf("********** rDeviceTractorDrive ********\n");
-	printf("\n\t== VEHICLE KINEMATICS ==\n\n");
+	printf("\n\t== PARAMETERS OF VEHICLE KINEMATICS ==\n\n");
 	printf("Distance between front and rear axis: \t%.3f \t(m)\n", _distance_btw_axes);
 	printf("Radius of front wheel: \t%.3f \t(m)\n", _front_wheel_radius);
 	printf("Radius of rear wheel: \t%.3f \t(m)\n", _rear_wheel_radius);
@@ -779,13 +853,26 @@ void rDeviceTractorDrive::PrintParams()
 	printf("Steering velocity limit: \t%.3f \t(degree/s)\n", _steer_velocity_limit*RADIAN);
 	printf("Longitudinal velocity limit: \t%.3f \t(m/s)\n", _velocity_limit);
 	printf("Longitudinal acceleration limit: \t%.3f \t(m/s^2)\n", _acceleration_limit);
-	printf("\n\t== VEHICLE DYNAMICS ==\n\n");
+	printf("\n\t== PARAMETERS OF VEHICLE DYNAMICS ==\n\n");
 	printf("Cornering stiffness of front wheels(Cf): \t%.3f \t(N/rad)\n", _Cf);
 	printf("Cornering stiffness of rear wheels(Cr): \t%.3f \t(N/rad)\n", _Cr);
 	printf("Mass of the tractor(m): \t%.3f \t(kg)\n", _m);
 	printf("Turning inertia WRT tractor COG(Iz): \t%.3f \t(kg m^2)\n", _Iz);
 	printf("Distance from front wheel to tractor COG(Lf): \t%.3f \t(m)\n", _Lf);
 	printf("Distance from rear wheel to tractor COG(Lr): \t%.3f \t(m)\n", _Lr);
+	printf("\n\t== PARAMETERS OF TIRE DYNAMICS ==\n\n");
+	printf("Tire radius(R_tire): \t%.3f \t(m)\n", _tire_r);
+	printf("Tire contact length(b): \t%.3f \t(m)\n", _tire_b);
+	printf("Tire contact width(w): \t%.3f \t(m)\n", _tire_w);
+	printf("Gravitational acceleration(g): \t%.3f \t(m/s^2)\n", _g);
+	printf("\n\t== PARAMETERS OF SOIL DEFORMATION ==\n\n");
+	printf("Soil adhesiveness(c): \t%.3f \t(Pa)\n", _c);
+	printf("Inertial friction angle(pi): \t%.3f \t(deg)\n", _pi*RADIAN);
+	printf("Shear modulus of elasticity(K): \t%.3f \t(m)\n", _K);
+	printf("Cohesive modulus of terrain deformation(k_c): \t%.3f \t(Pa)\n", _k_c);
+	printf("Frictional modulus of terrain deformation(k_pi): \t%.3f \t(Pa)\n", _k_pi);
+	printf("Exponent of terrain deformation(n): \t%.3f \t\n", _n);
+	printf("Slope slip ratio(s_mean, s_std): \t%.3f \t%0.3f\n", _s_mean, _s_std);
 	printf("\n");
 	printf("\n");
 	printf("***************************************\n");

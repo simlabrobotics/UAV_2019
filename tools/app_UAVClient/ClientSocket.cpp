@@ -16,7 +16,7 @@ CClientSocket::~CClientSocket(void)
 {
 }
 
-void CClientSocket::sendVelocity(float lvel_rps, float rvel_rps)
+void CClientSocket::sendVelocity(float v1, float v2)
 {
 	if (!_msgSend) {
 		_msgSend = new kaiMsg();
@@ -24,10 +24,10 @@ void CClientSocket::sendVelocity(float lvel_rps, float rvel_rps)
 	}
 	
 	_msgSend->reset();
-	_msgSend->id(UAVP_SET_VELOCITY);
+	_msgSend->id(UAVP_SET_TARGET_VELOCITY);
 	_msgSend->begin();
-	(*_msgSend) << (float)lvel_rps; // 
-	(*_msgSend) << (float)rvel_rps; // 
+	(*_msgSend) << (float)v1; // target forward velocity or left wheel velocity
+	(*_msgSend) << (float)v2; // target steer angle or right wheel velocity
 	_msgSend->end();
 	send(*_msgSend);
 }

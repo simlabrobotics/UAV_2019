@@ -87,28 +87,22 @@ void UAV::onMessage(int id, kaiMsg &msg)
 	}
 	break;
 
-	case UAVP_SET_WHEEL_VELOCITY:
-	case UAVP_SET_VELOCITY:
+	case UAVP_SET_TARGET_VELOCITY:
 	{
 		float val[2] = { 0, 0 };
 		memcpy(&val, (char*)msg.buffer() + 8, sizeof(float) * 2);
-		if (msg.id() == UAVP_SET_WHEEL_VELOCITY)
-			onSetTargetWheelVelocity(val[0], val[1]); // left & right wheel velocity in rad/sec 
-		else if (msg.id() == UAVP_SET_VELOCITY)
-			onSetTargetVelocity(val[0], val[1]); // target vehicle velocity, (v, w)
-		else
-			break; // Exception!
+		onSetTargetVelocity(val[0], val[1]);
 
-				   /*PHYSICS_WORLD->activateWorld();
-				   if (PHYSICS_WORLD->time() > 0)
-				   {
-				   }
-				   else
-				   {
-				   PHYSICS_WORLD->update();
-				   }
-				   PHYSICS_WORLD->update();
-				   PHYSICS_WORLD->deactivateWorld();*/
+		/*PHYSICS_WORLD->activateWorld();
+		if (PHYSICS_WORLD->time() > 0)
+		{
+		}
+		else
+		{
+		PHYSICS_WORLD->update();
+		}
+		PHYSICS_WORLD->update();
+		PHYSICS_WORLD->deactivateWorld();*/
 
 		kaiSocket* client = findClient(id);
 		if (!client) break;
@@ -151,18 +145,10 @@ void UAV::onMessage(int id, kaiMsg &msg)
 	}
 	break;
 
-	case UAVP_SET_MAXIMUM_WHEEL_VELOCITY:
-	{
-		float val[2] = { 0, 0 };
-		memcpy(&val, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float) * 2); // maximum wheel velocity in rad/sec and acceleration in rad/sec^2
-		onSetMaximumWheelVelocity(val[0], val[1]);
-	}
-	break;
-
 	case UAVP_SET_MAXIMUM_VELOCITY:
 	{
 		float val[2] = { 0, 0 };
-		memcpy(&val, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float) * 2); // maximum linear velocity in m/sec and rotational velocity in rad/sec
+		memcpy(&val, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float) * 2);
 		onSetMaximumVelocity(val[0], val[1]);
 	}
 	break;
@@ -495,39 +481,28 @@ void UAV::onAddWaypoint(const WAYPOINT& waypoint)
 	}
 }
 
-void UAV::onSetTargetWheelVelocity(float lvel_rps, float rvel_rps)
+void UAV::onSetTargetVelocity(float v1, float v2)
 {
-	if (NULL == _drive) return;
-	float val[2];
-	val[0] = lvel_rps;
-	val[1] = rvel_rps;
-	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_WHEEL_VEL_TARGET);
-}
+	// in case of differential-wheel drive vehicle,
+	//		v1: left wheel velocity in rad/sec
+	//		v2: right wheel velocity in rad/sec 
+	// in case of car-like vehicle,
+	//		v1: target forward velocity
+	//		v2: target steer angle
 
-void UAV::onSetTargetVelocity(float v_mps, float w_rps)
-{
 	if (NULL == _drive) return;
 	float val[2];
-	val[0] = v_mps;
-	val[1] = w_rps;
+	val[0] = v1;
+	val[1] = v2;
 	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_VEL_TARGET);
 }
 
-void UAV::onSetMaximumWheelVelocity(float max_vel_rps, float max_acc_rpss)
+void UAV::onSetMaximumVelocity(float max_v1, float max_v2)
 {
 	if (NULL == _drive) return;
 	float val[2];
-	val[0] = max_vel_rps;
-	val[1] = max_acc_rpss;
-	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_MAXIMUM_WHEEL_VEL);
-}
-
-void UAV::onSetMaximumVelocity(float max_v_mps, float max_w_rps)
-{
-	if (NULL == _drive) return;
-	float val[2];
-	val[0] = max_v_mps;
-	val[1] = max_w_rps;
+	val[0] = max_v1;
+	val[1] = max_v2;
 	_drive->writeDeviceValue(val, sizeof(float) * 2, UAVDRV_DATAPORT_SET_MAXIMUM_VEL);
 }
 

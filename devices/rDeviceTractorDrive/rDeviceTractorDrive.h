@@ -126,6 +126,22 @@ private:
 	// minimum forward velocity to apply extended bicycle model with lateral vehicle dynamics
 	float	_v_threshod_to_apply_slippage;
 
+	// model parameters to calculate slippage wrt soil deformation (2019/06)
+	float	_tire_r;	// radius of tire
+	float	_tire_b;	// initial contact length of tire
+	float	_tire_w;	// contact width of tire
+	float	_g;			// gravitational acceleration
+	float	_c;			// soil adhesiveness
+	float	_pi;		// inertial friction angle
+	float	_K;			// shear modulus of elasticity
+	float	_k_c;		// cohesive modulus of terrain deformation
+	float	_k_pi;		// frictional modulus of terrain deformation
+	float	_n;			// exponent of terrain deformation
+	float	_s_mean;	// slope slip ratio (mean)
+	float	_s_std;		// slope slip ratio (standard deviation)
+	float	_ax_slope;	// forward acceleration due to slope and soil deformation
+	float	_ay_slope;	// lateral acceleration due to slope and soil deformation
+
 	// height map
 	HeightMap _hmap;
 	int _hmap_normal_window_size;

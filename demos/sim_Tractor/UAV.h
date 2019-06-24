@@ -55,10 +55,8 @@ public:
 protected:
 	// network message handlers:
 	void onAddWaypoint(const WAYPOINT &waypoint);
-	void onSetTargetWheelVelocity(float lvel_rps, float rvel_rps);
-	void onSetTargetVelocity(float v_mps, float w_rps);
-	void onSetMaximumWheelVelocity(float max_vel_rps, float max_acc_rpss);
-	void onSetMaximumVelocity(float max_v_mps, float max_w_rps);
+	void onSetTargetVelocity(float v1, float v2);
+	void onSetMaximumVelocity(float max_v1, float max_v2);
 	void onSetPose(const POSE2D &pose);
 	void onMotionState(const MOTIONSTATE &motionstate);
 	void onMovingPTO(const PTO &pto);

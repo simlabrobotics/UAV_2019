@@ -10,13 +10,10 @@
 
 // device commands
 #define UAVDRV_DATAPORT_SET_POSE					(255)	// set (x, y, th)
-#define UAVDRV_DATAPORT_SET_VEL_IMMEDIATE			(254)	// set (v_des, thdot_des)
-#define UAVDRV_DATAPORT_SET_VEL_TARGET				(253)	// set (v_des, thdot_des)
-#define UAVDRV_DATAPORT_SET_WHEEL_VEL_IMMEDIATE		(252)	// set (wL_des, wR_des)
-#define UAVDRV_DATAPORT_SET_WHEEL_VEL_TARGET		(251)	// set (wL_des, wR_des)
-#define UAVDRV_DATAPORT_SET_MAXIMUM_VEL				(250)
-#define UAVDRV_DATAPORT_SET_MAXIMUM_WHEEL_VEL		(250)
-#define UAVDRV_DATAPORT_SET_PARAMETER				(249)
+#define UAVDRV_DATAPORT_SET_VEL_IMMEDIATE			(254)	// set (wL_des, wR_des) or (v_des, th_des)
+#define UAVDRV_DATAPORT_SET_VEL_TARGET				(253)	// set (wL_des, wR_des) or (v_des, th_des)
+#define UAVDRV_DATAPORT_SET_MAXIMUM_VEL				(252)	// set (wL_max, wR_max) or (v_max, th_max)
+#define UAVDRV_DATAPORT_SET_PARAMETER				(127)
 
 // port definition for monitoring UAV drive devices
 #define UAVDRV_MONITORPORT_POSE						(0)
@@ -31,7 +28,8 @@
 #define UAVDRV_MONITORPORT_TRACTIVE_FORCE			(13)
 #define UAVDRV_MONITORPORT_SINKAGE					(14)
 #define UAVDRV_MONITORPORT_MOTION_RESISTANCE		(15)
-#define UAVDRV_MONITORPORT_PARAMETER				(16)
+#define UAVDRV_MONITORPORT_SLIP_3D					(16)
+#define UAVDRV_MONITORPORT_PARAMETER				(17)
 
 
 #endif // __UAV_CMD_H__

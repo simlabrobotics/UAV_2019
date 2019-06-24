@@ -23,11 +23,17 @@
 
 
 /******************************************************************************
- Set target velocity of the wheels periodically.
+ Set target velocity of the vehicle.
+
+ In case of differential-wheel based vehicle, such as combine,
  @arg1 left wheel velocity in rad/sec
  @arg2 right wheel velocity in rad/sec
+ 
+ In case of car-like vehicle, such as tractor,
+ @arg1 linear(forward) velocity in m/sec
+ @arg2 steer angle in radian
 */
-#define UAVP_SET_WHEEL_VELOCITY			(1)
+#define UAVP_SET_TARGET_VELOCITY		(1)
 /**
  Notified with vehicle pose periodically.
  @arg1 heading angle in degree
@@ -48,9 +54,9 @@
 /******************************************************************************
  */
 #define UAVP_MOTION_STATE				(4)
-//#define UAVP_UP_WORKER					(5)
+//#define UAVP_UP_WORKER				(5)
 //#define UAVP_DOWN_WORKER				(6)
-//#define UAVP_PTO_WIDTH					(7)
+//#define UAVP_PTO_WIDTH				(7)
 
 
 /******************************************************************************
@@ -114,8 +120,16 @@
 #define UAVP_REQ_VEHICLE_STATUS			(18)
 /**
  Acknowledge vehicle status.
+ 
+ In case of differential-wheel based vehicle,
  @arg1 left wheel velocity in rad/sec
  @arg2 right wheel velocity in rad/sec
+ @arg3 linear velocity of the vehicle in m/s
+ @arg4 angular velocity of the vehicle in rad/sec
+ 
+ In case of car-like vehicle,
+ @arg1 linear velocity in m/s
+ @arg2 steer angle in radian
  @arg3 linear velocity of the vehicle in m/s
  @arg4 angular velocity of the vehicle in rad/sec
  */
@@ -124,10 +138,16 @@
 
 /******************************************************************************
  Set maximum wheel velocity.
+
+ In case of differential-wheel based vehicle,
  @arg1 maximum left wheel velocity in rad/sec
  @arg2 maximum right wheel velocity in rad/sec
+
+ In case of car-like vehicle,
+ @arg1 maximum linear velocity in rad/sec
+ @arg2 maximum steer angle in radian
 */
-#define UAVP_SET_MAXIMUM_WHEEL_VELOCITY	(20)
+#define UAVP_SET_MAXIMUM_VELOCITY		(20)
 
 
 /******************************************************************************
@@ -137,22 +157,6 @@
  @arg3 heading angle in degree
 */
 #define UAVP_SET_VEHICLE_POSE			(22)
-
-
-/******************************************************************************
-Set target velocity of the vehicle.
-@arg1 target linear velocity of the vehicle in the forward direction in m/sec
-@arg2 target rotational velocity of the vehicle in rad/sec
-*/
-#define UAVP_SET_VELOCITY				(24)
-
-
-/******************************************************************************
-Set maximum velocity of the vehicle.
-@arg1 maximum linear velocity of the vehicle in the forward direction in m/sec
-@arg2 maximum rotational velocity of the vehicle in rad/sec
-*/
-#define UAVP_SET_MAXIMUM_VELOCITY		(26)
 
 
 /******************************************************************************

@@ -15,7 +15,7 @@ public:
 	CClientSocket(void);
 	virtual ~CClientSocket(void);
 
-	void sendVelocity(float lvel_rps, float rvel_rps);
+	void sendVelocity(float v1, float v2);
 	void sendMovePTO(int down);
 	void resetPath();
 	void reqCoverage();

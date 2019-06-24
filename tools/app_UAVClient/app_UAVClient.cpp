@@ -6,15 +6,17 @@
 // app_UAVClient.cpp : Defines the entry point for the console application.
 //
 #include "ClientSocket.h"
+#include <rlab/math/rMath.h>
 
 #define RD_BOUND(val, lbound, ubound) \
 	((val) < (lbound) ? (lbound) : ((val) > (ubound) ? (ubound) : (val)))
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-float w_l_des = 0.0f; // desired left wheel velocity
-float w_r_des = 0.0f; // desired right wheel velocity
-const float W_INC = 0.27f;//0.01;
+float v_des = 0.0f; // desired velocity
+float theta_des = 0.0f; // desired steer angle
+const float V_INC = 0.27f;//0.01;
+const float THETA_INC = (float)(5.0*DEGREE);
 float pto_des = 0.0f;
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -60,7 +62,7 @@ int main(int argc, char *argv[])
 	while (bRun) {
 		if (!_kbhit()) {
 			/// send data here
-			client.sendVelocity(w_l_des, w_r_des);
+			client.sendVelocity(v_des, theta_des);
 			client.recv();
 			Sleep(5);
 		}
@@ -69,19 +71,19 @@ int main(int argc, char *argv[])
 			switch (c) {
 				// move UAV
 				case 'w': case 'W':
-					w_l_des += W_INC; w_r_des += W_INC;
+					v_des += V_INC;
 					break;
 				case 'x': case 'X':
-					w_l_des -= W_INC; w_r_des -= W_INC;
+					v_des -= V_INC;
 					break;
 				case 'a': case 'A':
-					w_l_des -= W_INC; w_r_des += W_INC;
+					theta_des += THETA_INC;
 					break;
 				case 'd': case 'D':
-					w_l_des += W_INC; w_r_des -= W_INC;
+					theta_des -= THETA_INC;
 					break;
 				case 's': case 'S':
-					w_l_des = 0; w_r_des = 0;
+					v_des = 0;
 					break;
 
 				// up&down worker
