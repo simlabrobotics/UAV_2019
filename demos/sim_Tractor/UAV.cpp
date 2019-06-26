@@ -596,6 +596,8 @@ void UAV::datanamesSlipPlot(std::vector<string_type>& datanames, int channel)
 	datanames.push_back(_name + string_type(_T(".beta slip angle(deg)")));
 	datanames.push_back(_name + string_type(_T(".front slip angle(deg)")));
 	datanames.push_back(_name + string_type(_T(".rear slip angle(deg)")));
+	datanames.push_back(_name + string_type(_T(".forward acceleration by soid deformation(m/s^2)")));
+	datanames.push_back(_name + string_type(_T(".lateral acceleration by soid deformation(m/s^2)")));
 	datanames.push_back(_name + string_type(_T(".steer angle(deg)")));
 	datanames.push_back(_name + string_type(_T(".velocity(m/s)")));
 	datanames.push_back(_name + string_type(_T(".lateral velocity(m/s)")));
@@ -735,6 +737,18 @@ void UAV::collectSlipData(std::vector<double>& data, int channel)
 	{
 		float nil(0.0f);
 		data.push_back(nil);
+		data.push_back(nil);
+		data.push_back(nil);
+	}
+
+	if (_drive && _drive->monitorDeviceValue(val, sizeof(float) * 2, UAVDRV_MONITORPORT_SLIP_3D) > 0)
+	{
+		data.push_back(val[0]);
+		data.push_back(val[1]);
+	}
+	else
+	{
+		float nil(0.0f);
 		data.push_back(nil);
 		data.push_back(nil);
 	}

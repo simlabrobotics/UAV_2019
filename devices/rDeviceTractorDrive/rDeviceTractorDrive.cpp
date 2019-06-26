@@ -433,6 +433,7 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 				value[1] = _ay_slope;
 			}
 			_lock.unlock();
+			return 2 * sizeof(float);
 		}
 	}
 	break;
@@ -621,8 +622,8 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		float tire_b;
 		std::vector<float> a_slope;
 		std::vector<float> slope_angles;
-		slope_angles.push_back(_roll);
 		slope_angles.push_back(_pitch);
+		slope_angles.push_back(-_roll);
 		for_each(slope_angles.begin(), slope_angles.end(), [&](float slope) {
 			tire_b = (_m * _g * cos(slope) / (4.0 * _tire_b * _tire_w * (_k_c / _tire_w + _k_pi)));
 			tire_b = pow(tire_b, (1.0 / _n));
@@ -639,7 +640,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		float vx_slope = _ax_slope * _dT;
 		float vy_slope = _ay_slope * _dT;
 		float xdot_slope = vx_slope*cos(_psi) - vy_slope*sin(_psi);
-		float ydot_slope = vx_slope*sin(_psi) - vy_slope*cos(_psi);
+		float ydot_slope = vx_slope*sin(_psi) + vy_slope*cos(_psi);
 		_x += xdot_slope*_dT;
 		_y += ydot_slope*_dT;
 
