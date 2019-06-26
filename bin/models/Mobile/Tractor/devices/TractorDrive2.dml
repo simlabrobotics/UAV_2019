@@ -44,6 +44,9 @@
     <property name="cohesive_modulus_of_terrain_deformation(k_c|Pa)" value="29790"/>
     <property name="frictional_modulus_of_terrain_deformation(k_pi|Pa)" value="2083000"/>
     <property name="exponent_of_terrain_deformation(n)" value="0.8"/>
+    <property name="slope_slip_ratio_mean(s_mean)" value="0.75"/>
+    <property name="slope_slip_ratio_std(s_std)" value="0.1"/>
+    <property name="ratio_of_terrain_deformation(K_sign)" value="0.15"/>
   </specification>
 
 </Device>

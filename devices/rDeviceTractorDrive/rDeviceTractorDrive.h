@@ -136,6 +136,7 @@ private:
 	float	_K;			// shear modulus of elasticity
 	float	_k_c;		// cohesive modulus of terrain deformation
 	float	_k_pi;		// frictional modulus of terrain deformation
+	float	_K_sign;	// ratio of terrain deformation
 	float	_n;			// exponent of terrain deformation
 	float	_s_mean;	// slope slip ratio (mean)
 	float	_s_std;		// slope slip ratio (standard deviation)

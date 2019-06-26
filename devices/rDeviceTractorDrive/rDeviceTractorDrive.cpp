@@ -647,7 +647,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 
 
 		/////////////////////////////////////////////////////////////////////
-		// new vehicle(tractor) trasformation
+		// new vehicle(tractor) transformation
 		//
 		float c = cos(_psi);
 		float s = sin(_psi);
@@ -817,6 +817,7 @@ void rDeviceTractorDrive::InitParams()
 	READ_PROP_REAL(_T("cohesive_modulus_of_terrain_deformation(k_c|Pa)"), _k_c, 1.0f);
 	READ_PROP_REAL(_T("frictional_modulus_of_terrain_deformation(k_pi|Pa)"), _k_pi, 1.0f);
 	READ_PROP_REAL(_T("exponent_of_terrain_deformation(n)"), _n, 1.0f);
+	READ_PROP_REAL(_T("ratio_of_terrain_deformation(K_sign)"), _K_sign, 0.0f); 
 	READ_PROP_REAL(_T("slope_slip_ratio_mean(s_mean)"), _s_mean, 0.0f);
 	READ_PROP_REAL(_T("slope_slip_ratio_std(s_std)"), _s_std, 0.0f);
 }
@@ -873,6 +874,7 @@ void rDeviceTractorDrive::PrintParams()
 	printf("Cohesive modulus of terrain deformation(k_c): \t%.3f \t(Pa)\n", _k_c);
 	printf("Frictional modulus of terrain deformation(k_pi): \t%.3f \t(Pa)\n", _k_pi);
 	printf("Exponent of terrain deformation(n): \t%.3f \t\n", _n);
+	printf("Ratio of terrain deformation(K_sign): \t%.3f\n", _K_sign); 
 	printf("Slope slip ratio(s_mean, s_std): \t%.3f \t%0.3f\n", _s_mean, _s_std);
 	printf("\n");
 	printf("\n");
