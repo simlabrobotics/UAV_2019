@@ -58,7 +58,7 @@ void LateralForceDataCallback(std::vector<double>& data);
 float v_des = 0.0f; // desired velocity
 float theta_des = 0.0f; // desired steer angle
 const float V_INC = 0.27f;//0.01;
-const float THETA_INC = (float)(5.0*DEGREE);
+const float THETA_INC = (float)(5.0);//degree
 float pto_des = 0.0f;
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////

@@ -278,8 +278,8 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 			_lock.lock();
 			{
 				float *value = (float*)buffer;
-				_v_des = value[0];		// forward velocity
-				_theta_des = value[1];		// steer angle
+				_v_des = value[0];				// forward velocity
+				_theta_des = value[1]*DEGREE;	// steer angle(degree)
 			}
 			_lock.unlock();
 			return 2 * sizeof(float);

@@ -31,7 +31,7 @@
  
  In case of car-like vehicle, such as tractor,
  @arg1 linear(forward) velocity in m/sec
- @arg2 steer angle in radian
+ @arg2 steer angle in degree
 */
 #define UAVP_SET_TARGET_VELOCITY		(1)
 /**

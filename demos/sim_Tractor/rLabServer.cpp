@@ -9,9 +9,15 @@
 static void dumpMessage(kaiMsg& msg, const char* dec)
 {
 	float arg[4];
-	memcpy(arg, (char*)msg.buffer() + 8, sizeof(float)*4);
-	printf("%s[id=%02d] %.3f\t %.3f\t %.3f\t %.3f\n",
-		dec, msg.id(), arg[0], arg[1], arg[2], arg[3]);
+	memcpy(arg, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float)*4);
+	printf("%s[id=%02d]", dec, msg.id());
+	for (int i = 0; i < 16; i++) {
+		printf(" %02x", *(msg.buffer() + Size_kaiHEADER + i));
+		if ((i % 4) == 3)
+			printf(" ");
+	}
+	printf("\tflot[] = %.3f %.3f %.3f %.3f", arg[0], arg[1], arg[2], arg[3]);
+	printf("\n");
 }
 
 rLabServer::rLabServer()
