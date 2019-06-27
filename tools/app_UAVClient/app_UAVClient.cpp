@@ -56,10 +56,12 @@ int main(int argc, char *argv[])
 	printf("\'R\' or \'r\': lift up PTO\n");
 	printf("\'F\' or \'f\': let down PTO\n");
 	printf("\n");
-	printf("\'P\' or \'p\': reset Path\n");
+	printf("\'P\' or \'p\': reset path\n");
+	printf("\'O\' or \'o\': reset work statistics\n");
+	printf("\'I\' or \'i\': reset vehicle pose\n");
 	printf("---------------------------------------------\n");
 	printf("\'C\' or \'c\': request coverage statistics\n");
-	printf("\'I\' or \'i\': request indicators\n");
+	printf("\'K\' or \'k\': request indicators\n");
 	printf("*********************************************\n");
 
 	bool bRun = true;
@@ -81,10 +83,10 @@ int main(int argc, char *argv[])
 					v_des -= V_INC;
 					break;
 				case 'a': case 'A':
-					theta_des += THETA_INC;
+					theta_des -= THETA_INC;
 					break;
 				case 'd': case 'D':
-					theta_des -= THETA_INC;
+					theta_des += THETA_INC;
 					break;
 				case 's': case 'S':
 					v_des = 0;
@@ -103,13 +105,23 @@ int main(int argc, char *argv[])
 					client.resetPath();
 					break;
 
+				// reset work statistics
+				case 'o': case 'O':
+					client.resetCoverage();
+					break;
+
+				// reset vehicle pose
+				case 'i': case 'I':
+					client.resetPose();
+					break;
+
 				// request coverage data
 				case 'c': case 'C':
 					client.reqCoverage();
 					break;
 
 				// request other indicators
-				case 'i': case 'I':
+				case 'k': case 'K':
 					client.reqIndicators();
 					break;
 

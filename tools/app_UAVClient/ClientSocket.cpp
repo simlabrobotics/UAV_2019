@@ -57,38 +57,87 @@ void CClientSocket::resetPath()
 		_msgSend->allocateMemory();
 	}
 
+	static float WP[2][5][3] = {
+		{
+			{   1.0f,   1.0f, 0.0f },
+			{  10.0f,  10.0f, 0.0f },
+			{  20.0f,  10.0f, 0.0f },
+			{  20.0f, -50.0f, 0.0f },
+			{ -50.0f, -50.0f, 0.0f }
+		},
+		{
+			{   5.0f,   5.0f, 0.0f },
+			{  15.0f,  15.0f, 0.0f },
+			{  30.0f,  15.0f, 0.0f },
+			{  30.0f, -60.0f, 0.0f },
+			{ -60.0f, -60.0f, 0.0f }
+		}
+	};
+	static int c_i = 0;
+
 	_msgSend->reset();
 	_msgSend->id(UAVP_ADD_WAYPOINT);
 	_msgSend->begin();
-	(*_msgSend) << (unsigned int)1 << (float)1.0f << (float)1.0f << (float)0.0f;
+	(*_msgSend) << (unsigned int)1 << WP[c_i][0][0] << WP[c_i][0][1] << WP[c_i][0][2];
 	_msgSend->end();
 	send(*_msgSend);
 
 	_msgSend->reset();
 	_msgSend->id(UAVP_ADD_WAYPOINT);
 	_msgSend->begin();
-	(*_msgSend) << (unsigned int)2 << (float)10.0f << (float)10.0f << (float)0.0f;
+	(*_msgSend) << (unsigned int)2 << WP[c_i][1][0] << WP[c_i][1][1] << WP[c_i][1][2];
 	_msgSend->end();
 	send(*_msgSend);
 
 	_msgSend->reset();
 	_msgSend->id(UAVP_ADD_WAYPOINT);
 	_msgSend->begin();
-	(*_msgSend) << (unsigned int)3 << (float)20.0f << (float)10.0f << (float)0.0f;
+	(*_msgSend) << (unsigned int)3 << WP[c_i][2][0] << WP[c_i][2][1] << WP[c_i][2][2];
 	_msgSend->end();
 	send(*_msgSend);
 
 	_msgSend->reset();
 	_msgSend->id(UAVP_ADD_WAYPOINT);
 	_msgSend->begin();
-	(*_msgSend) << (unsigned int)3 << (float)20.0f << (float)-50.0f << (float)0.0f;
+	(*_msgSend) << (unsigned int)4 << WP[c_i][3][0] << WP[c_i][3][1] << WP[c_i][3][2];
 	_msgSend->end();
 	send(*_msgSend);
 
 	_msgSend->reset();
 	_msgSend->id(UAVP_ADD_WAYPOINT);
 	_msgSend->begin();
-	(*_msgSend) << (unsigned int)3 << (float)-50.0f << (float)-50.0f << (float)0.0f;
+	(*_msgSend) << (unsigned int)5 << WP[c_i][4][0] << WP[c_i][4][1] << WP[c_i][4][2];
+	_msgSend->end();
+	send(*_msgSend);
+
+	c_i = (c_i == 0 ? 1 : 0);
+}
+
+void CClientSocket::resetCoverage()
+{
+	if (!_msgSend) {
+		_msgSend = new kaiMsg();
+		_msgSend->allocateMemory();
+	}
+
+	_msgSend->reset();
+	_msgSend->id(UAVP_RESET_COVERAGE);
+	_msgSend->begin();
+	_msgSend->end();
+	send(*_msgSend);
+}
+
+void CClientSocket::resetPose()
+{
+	if (!_msgSend) {
+		_msgSend = new kaiMsg();
+		_msgSend->allocateMemory();
+	}
+
+	_msgSend->reset();
+	_msgSend->id(UAVP_SET_VEHICLE_POSE);
+	_msgSend->begin();
+	(*_msgSend) << (float)10.0f << (float)10.0f << (float)45.0f << (float)0.0f;
 	_msgSend->end();
 	send(*_msgSend);
 }

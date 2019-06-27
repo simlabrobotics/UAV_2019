@@ -538,7 +538,7 @@ void UAV::onMovingPTO(const PTO &pto)
 {
 	if (_pto)
 	{
-		float angle = (pto.signal == 0 ? 0.0f : -15.0f*DEGREE);
+		float angle = (pto.signal == 0 ? 0.0f : 30.0f*DEGREE);
 		_pto->writeDeviceValue(&angle, sizeof(float));
 	}
 	if (_wc)

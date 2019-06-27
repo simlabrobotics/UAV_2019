@@ -18,6 +18,8 @@ public:
 	void sendVelocity(float v1, float v2);
 	void sendMovePTO(int down);
 	void resetPath();
+	void resetCoverage();
+	void resetPose();
 	void reqCoverage();
 	void reqSlipAngle();
 	void reqGPS();

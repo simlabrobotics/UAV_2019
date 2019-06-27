@@ -148,8 +148,8 @@ void MyKeyboardHandler(int key, void* data)
 	{
 	case VK_UP: v_des += V_INC; break;
 	case VK_DOWN: v_des -= V_INC; break;
-	case VK_LEFT: theta_des += THETA_INC; break;
-	case VK_RIGHT: theta_des -= THETA_INC; break;
+	case VK_LEFT: theta_des -= THETA_INC; break;
+	case VK_RIGHT: theta_des += THETA_INC; break;
 	case VK_SPACE: v_des = 0; break;
 
 	case VK_PRIOR: pto_des = (float)(0 * DEGREE); break;

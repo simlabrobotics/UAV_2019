@@ -77,7 +77,7 @@ void rGraphicsUAVWaypoints::onCreate(double dTime)
 
 
 
-
+/*
 	_wp_count = 3;
 		
 	// index/vertex array to draw waypoints.
@@ -132,6 +132,7 @@ void rGraphicsUAVWaypoints::onCreate(double dTime)
 		setLabelSize(marker, _wp_label_size);
 		_hWP.push_back(marker);
 	}
+*/
 }
 
 void rGraphicsUAVWaypoints::onDestroy(double dTime)

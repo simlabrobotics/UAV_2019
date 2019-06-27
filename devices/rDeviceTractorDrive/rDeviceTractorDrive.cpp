@@ -263,7 +263,7 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 			{
 				float *value = (float*)buffer;
 				_v = _v_des = value[0];		// forward velocity
-				_theta = _theta_des = value[1];	// steer angle
+				_theta = _theta_des = -value[1]*DEGREE;	// steer angle (steer angle increase clockwise)
 			}
 			_lock.unlock();
 			return 2 * sizeof(float);
@@ -279,7 +279,7 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 			{
 				float *value = (float*)buffer;
 				_v_des = value[0];				// forward velocity
-				_theta_des = value[1]*DEGREE;	// steer angle(degree)
+				_theta_des = -value[1]*DEGREE;	// steer angle (steer angle increase clockwise)
 			}
 			_lock.unlock();
 			return 2 * sizeof(float);
@@ -306,13 +306,26 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 					if (fvalue[1] > 0.0f) _g = fvalue[1];
 					break;
 				case PTYPE_C_slip_ratio_mean_and_std:
+					break;
 				case PTYPE_C_maximum_velocity:
+					if (fvalue[1] > 0.0f) _velocity_limit = fvalue[1];
+					break;
 				case PTYPE_C_maximum_acceleration:
+					if (fvalue[1] > 0.0f) _acceleration_limit = fvalue[1];
+					break;
 				case PTYPE_C_maximum_steer_angle:
+					if (fvalue[1] > 0.0f) _steer_limit = fvalue[1] * DEGREE;
+					break;
 				case PTYPE_C_maximum_steer_velocity:
+					if (fvalue[1] > 0.0f) _steer_velocity_limit = fvalue[1] * DEGREE;
 				case PTYPE_C_steer_ratio:
+					break;
 				case PTYPE_C_velocity_noise_mean_and_std:
+					break;
 				case PTYPE_C_velocity_threshold_to_apply_slippage:
+					_v_threshod_to_apply_slippage_f = fvalue[1];
+					_v_threshod_to_apply_slippage_b = fvalue[2];
+					break;
 				case PTYPE_C_Cf:
 					if (fvalue[1] > 0.0f) _Cf = fvalue[1];
 					break;
@@ -326,17 +339,42 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 					if (fvalue[1] > 0.0f) _Lr = fvalue[1];
 					break;
 				case PTYPE_C_velocity_threshold_to_apply_slippage_due_to_slope:
+					_v_threshod_to_apply_slopeslip_f = fvalue[1];
+					_v_threshod_to_apply_slopeslip_b = fvalue[2];
+					break;
 				case PTYPE_C_tire_radius:
+					if (fvalue[1] > 0.0f) _tire_r = fvalue[1];
+					break;
 				case PTYPE_C_tire_contact_length:
+					if (fvalue[1] > 0.0f) _tire_b = fvalue[1];
+					break;
 				case PTYPE_C_tire_contact_width:
+					if (fvalue[1] > 0.0f) _tire_w = fvalue[1];
+					break;
 				case PTYPE_C_soil_adhesiveness:
+					_c = fvalue[1];
+					break;
 				case PTYPE_C_internal_shearing_resistance:
+					_pi = fvalue[1];
+					break;
 				case PTYPE_C_shear_modulus_of_elasticity:
+					_K = fvalue[1];
+					break;
 				case PTYPE_C_cohesive_modulus_of_terrain_deformation:
+					_k_c = fvalue[1];
+					break;
 				case PTYPE_C_frictional_modulus_of_terrain_deformation:
+					_k_pi = fvalue[1];
+					break;
 				case PTYPE_C_exponent_of_terrain_deformation:
+					_n = fvalue[1];
+					break;
 				case PTYPE_C_slope_slip_ratio_mean_and_std:
+					_s_mean = fvalue[1];
+					_s_std = fvalue[2];
+					break;
 				case PTYPE_C_ratio_of_terrain_deformation:
+					_K_sign = fvalue[1];
 					break;
 				}
 			}
