@@ -31,7 +31,7 @@
 
   <property name="aml2_r0" value="10 0 0.75"/>
 
-  <property name="debug_control_local_enable" value="true"/>
+  <property name="debug_control_local_enable" value="false"/>
 
   <property name="eml_R0" value="1 0 0 0 1 0 0 0 1"/>
 
@@ -43,7 +43,7 @@
 
   <property name="eml_r0" value="0 0 0"/>
 
-  <property name="eml_wc1_name" value="Environment::WorkAreaCalc1.aml"/>
+  <property name="eml_wc1_name" value="WorkAreaCalc1.aml"/>
 
   <property name="eml_wc2_name" value="Environment::WorkAreaCalc2.aml"/>
 

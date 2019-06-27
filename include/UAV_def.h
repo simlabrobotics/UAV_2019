@@ -91,6 +91,7 @@ typedef struct sParameter
 
 enum eParamType
 {
+	// differential-drive vehicle(combine, etc):
 	PTYPE_lateral_resistance = 1,
 	PTYPE_gravitational_acceleration = 2,
 	PTYPE_slip_ratio_mean_and_std = 3,
@@ -108,6 +109,34 @@ enum eParamType
 	PTYPE_track_width = 103,
 	PTYPE_vehicle_mass = 104,
 	PTYPE_wheel_radius = 105,
+	// car-like vehicle(tractor, etc):
+	PTYPE_C_vehicle_mass = 257,
+	PTYPE_C_vehicle_moment_of_inertia_at_COG = 258,
+	PTYPE_C_gravitational_acceleration = 259,
+	PTYPE_C_slip_ratio_mean_and_std = 260,
+	PTYPE_C_maximum_velocity = 261,
+	PTYPE_C_maximum_acceleration = 262,
+	PTYPE_C_maximum_steer_angle = 263,
+	PTYPE_C_maximum_steer_velocity = 264,
+	PTYPE_C_steer_ratio = 265,
+	PTYPE_C_velocity_noise_mean_and_std = 266,
+	PTYPE_C_velocity_threshold_to_apply_slippage = 271,
+	PTYPE_C_Cf = 272,
+	PTYPE_C_Cr = 273,
+	PTYPE_C_Lf = 274,
+	PTYPE_C_Lr = 275,
+	PTYPE_C_velocity_threshold_to_apply_slippage_due_to_slope = 281,
+	PTYPE_C_tire_radius = 282,
+	PTYPE_C_tire_contact_length = 283,
+	PTYPE_C_tire_contact_width = 284,
+	PTYPE_C_soil_adhesiveness = 285,
+	PTYPE_C_internal_shearing_resistance = 286,
+	PTYPE_C_shear_modulus_of_elasticity = 287,
+	PTYPE_C_cohesive_modulus_of_terrain_deformation = 288,
+	PTYPE_C_frictional_modulus_of_terrain_deformation = 289,
+	PTYPE_C_exponent_of_terrain_deformation = 290,
+	PTYPE_C_slope_slip_ratio_mean_and_std = 291,
+	PTYPE_C_ratio_of_terrain_deformation = 292,
 };
 
 #define HMAP_SIZE_MAX (1024*1024)

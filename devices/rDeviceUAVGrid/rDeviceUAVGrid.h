@@ -32,6 +32,7 @@ public:
 	RD_DECLARE_writeDeviceValue;
 	RD_DECLARE_monitorDeviceValue;
 	RD_DECLARE_importDevice;
+	RD_DECLARE_command;
 
 private:
 	string_type				_tool_robotName;

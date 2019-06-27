@@ -286,6 +286,66 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 		}
 	}
 
+	case UAVDRV_DATAPORT_SET_PARAMETER:
+	{
+		if (len >= 4 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				int *ivalue = (int*)buffer;
+				float *fvalue = (float*)buffer;
+				switch (ivalue[0])
+				{
+				case PTYPE_C_vehicle_mass:
+					if (fvalue[1] > 0.0f) _m = fvalue[1];
+					break;
+				case PTYPE_C_vehicle_moment_of_inertia_at_COG:
+					if (fvalue[1] > 0.0f) _Iz = fvalue[1];
+					break;
+				case PTYPE_C_gravitational_acceleration:
+					if (fvalue[1] > 0.0f) _g = fvalue[1];
+					break;
+				case PTYPE_C_slip_ratio_mean_and_std:
+				case PTYPE_C_maximum_velocity:
+				case PTYPE_C_maximum_acceleration:
+				case PTYPE_C_maximum_steer_angle:
+				case PTYPE_C_maximum_steer_velocity:
+				case PTYPE_C_steer_ratio:
+				case PTYPE_C_velocity_noise_mean_and_std:
+				case PTYPE_C_velocity_threshold_to_apply_slippage:
+				case PTYPE_C_Cf:
+					if (fvalue[1] > 0.0f) _Cf = fvalue[1];
+					break;
+				case PTYPE_C_Cr:
+					if (fvalue[1] > 0.0f) _Cr = fvalue[1];
+					break;
+				case PTYPE_C_Lf:
+					if (fvalue[1] > 0.0f) _Lf = fvalue[1];
+					break;
+				case PTYPE_C_Lr:
+					if (fvalue[1] > 0.0f) _Lr = fvalue[1];
+					break;
+				case PTYPE_C_velocity_threshold_to_apply_slippage_due_to_slope:
+				case PTYPE_C_tire_radius:
+				case PTYPE_C_tire_contact_length:
+				case PTYPE_C_tire_contact_width:
+				case PTYPE_C_soil_adhesiveness:
+				case PTYPE_C_internal_shearing_resistance:
+				case PTYPE_C_shear_modulus_of_elasticity:
+				case PTYPE_C_cohesive_modulus_of_terrain_deformation:
+				case PTYPE_C_frictional_modulus_of_terrain_deformation:
+				case PTYPE_C_exponent_of_terrain_deformation:
+				case PTYPE_C_slope_slip_ratio_mean_and_std:
+				case PTYPE_C_ratio_of_terrain_deformation:
+					break;
+				}
+			}
+			_lock.unlock();
+			return 4 * sizeof(float);
+		}
+	}
+	break;
+
 	default:
 		// Exception! Unknown command.
 		return 0;
@@ -512,7 +572,8 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		/////////////////////////////////////////////////////////////////////
 		// calcurate new position and orientation
 		//
-		if (_v >= _v_threshod_to_apply_slippage)
+		if (_v >= _v_threshod_to_apply_slippage_f ||
+			_v <= _v_threshod_to_apply_slippage_b)
 		{
 			if (_Iz == 0 || _m == 0)
 			{
@@ -617,33 +678,37 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		// calcurate slippage due to soid deformation wrt vehicle pose,
 		// and apply it to update vehicle position
 		//
-		float k_sign = (sample_uniform01() > 0.5 ? 1 : -1);
-		float slope_slip_ratio = sample_quasi_normal(_s_mean, _s_std); 
-		float tire_b;
-		std::vector<float> a_slope;
-		std::vector<float> slope_angles;
-		slope_angles.push_back(_pitch);
-		slope_angles.push_back(-_roll);
-		for_each(slope_angles.begin(), slope_angles.end(), [&](float slope) {
-			tire_b = (_m * _g * cos(slope) / (4.0 * _tire_b * _tire_w * (_k_c / _tire_w + _k_pi)));
-			tire_b = pow(tire_b, (1.0 / _n));
-			tire_b = pow((_tire_r - tire_b), 2.0);
-			tire_b = sqrt(_tire_r * _tire_r - tire_b);
-			
-			float a = _g * sin(slope) - (tire_b * _tire_w / _m) * ((_c + _m * _g * cos(slope) * tan(_pi)) * (1 + k_sign * exp(-slope_slip_ratio * _tire_w / _K)));
-			a_slope.push_back(a);
-		});
-		
-		_ax_slope = a_slope[0];
-		_ay_slope = a_slope[1];
+		if (_v >= _v_threshod_to_apply_slopeslip_f ||
+			_v <= _v_threshod_to_apply_slopeslip_b)
+		{
+			float k_sign = (sample_uniform01() > 0.5 ? 1 : -1);
+			float slope_slip_ratio = sample_quasi_normal(_s_mean, _s_std);
+			float tire_b;
+			std::vector<float> a_slope;
+			std::vector<float> slope_angles;
+			slope_angles.push_back(_pitch); // pitch angle introduce forward acceleration
+			slope_angles.push_back(-_roll); // roll angle introduce lateral acceleration in opposite direction
+			for_each(slope_angles.begin(), slope_angles.end(), [&](float slope) {
+				tire_b = (_m * _g * cos(slope) / (4.0 * _tire_b * _tire_w * (_k_c / _tire_w + _k_pi)));
+				tire_b = pow(tire_b, (1.0 / _n));
+				tire_b = pow((_tire_r - tire_b), 2.0);
+				tire_b = sqrt(_tire_r * _tire_r - tire_b);
 
-		float vx_slope = _ax_slope * _dT;
-		float vy_slope = _ay_slope * _dT;
-		float xdot_slope = vx_slope*cos(_psi) - vy_slope*sin(_psi);
-		float ydot_slope = vx_slope*sin(_psi) + vy_slope*cos(_psi);
-		_x += xdot_slope*_dT;
-		_y += ydot_slope*_dT;
+				float a = _g * sin(slope) - (tire_b * _tire_w / _m) * ((_c + _m * _g * cos(slope) * tan(_pi)) * (1 + k_sign * exp(-slope_slip_ratio * _tire_w / _K)));
+				if ((slope * a) <= 0) a = 0; // sign of 'slope' and 'a' cannot be opposite.
+				a_slope.push_back(a);
+			});
 
+			_ax_slope = a_slope[0];
+			_ay_slope = a_slope[1];
+
+			float vx_slope = _ax_slope * _dT;
+			float vy_slope = _ay_slope * _dT;
+			float xdot_slope = vx_slope*cos(_psi) - vy_slope*sin(_psi);
+			float ydot_slope = vx_slope*sin(_psi) + vy_slope*cos(_psi);
+			_x += xdot_slope*_dT;
+			_y += ydot_slope*_dT;
+		}
 
 
 		/////////////////////////////////////////////////////////////////////
@@ -797,8 +862,10 @@ void rDeviceTractorDrive::InitParams()
 	READ_PROP_REAL(_T("slip_ratio"), _slip_ratio, 0.0f);
 	_slip_ratio = (float)RD_BOUND(_slip_ratio, 0, 1.0);
 
-	READ_PROP_REAL(_T("velocity_threshold_to_apply_slippage"), _v_threshod_to_apply_slippage, 0.3f);
-	_v_threshod_to_apply_slippage = (float)RD_LBOUND(_v_threshod_to_apply_slippage, 1.0e-4);
+	READ_PROP_REAL(_T("velocity_threshold_to_apply_slippage_f"), _v_threshod_to_apply_slippage_f, 0.3f);
+	_v_threshod_to_apply_slippage_f = (float)RD_LBOUND(_v_threshod_to_apply_slippage_f, 1.0e-4);
+	READ_PROP_REAL(_T("velocity_threshold_to_apply_slippage_b"), _v_threshod_to_apply_slippage_b, -0.3f);
+	_v_threshod_to_apply_slippage_b = (float)RD_UBOUND(_v_threshod_to_apply_slippage_b, -1.0e-4);
 
 	// tire dynamics
 	READ_PROP_REAL(_T("tire_radius(R_tire|m)"), _tire_r, 1.0f);
@@ -811,7 +878,7 @@ void rDeviceTractorDrive::InitParams()
 	
 	// soil deformation
 	READ_PROP_REAL(_T("soil_adhesiveness(c|Pa)"), _c, 1.0f);
-	READ_PROP_REAL(_T("inertial_friction_angle(pi|deg)"), _pi, 1.0f);
+	READ_PROP_REAL(_T("internal_shearing_resistance(pi|deg)"), _pi, 1.0f);
 	_pi *= DEGREE;
 	READ_PROP_REAL(_T("shear_modulus_of_elasticity(K|m)"), _K, 1.0f);
 	READ_PROP_REAL(_T("cohesive_modulus_of_terrain_deformation(k_c|Pa)"), _k_c, 1.0f);
@@ -820,6 +887,10 @@ void rDeviceTractorDrive::InitParams()
 	READ_PROP_REAL(_T("ratio_of_terrain_deformation(K_sign)"), _K_sign, 0.0f); 
 	READ_PROP_REAL(_T("slope_slip_ratio_mean(s_mean)"), _s_mean, 0.0f);
 	READ_PROP_REAL(_T("slope_slip_ratio_std(s_std)"), _s_std, 0.0f);
+	READ_PROP_REAL(_T("velocity_threshold_to_apply_slopeslip_f(v_th_slopeslip_f|m/s)"), _v_threshod_to_apply_slopeslip_f, 0.0f);
+	_v_threshod_to_apply_slopeslip_f = (float)RD_LBOUND(_v_threshod_to_apply_slopeslip_f, 1.0e-4);
+	READ_PROP_REAL(_T("velocity_threshold_to_apply_slopeslip_b(v_th_slopeslip_b|m/s)"), _v_threshod_to_apply_slopeslip_b, 0.0f);
+	_v_threshod_to_apply_slopeslip_b = (float)RD_UBOUND(_v_threshod_to_apply_slopeslip_b, -1.0e-4);
 }
 
 void rDeviceTractorDrive::InitHeightMap()
@@ -876,6 +947,9 @@ void rDeviceTractorDrive::PrintParams()
 	printf("Exponent of terrain deformation(n): \t%.3f \t\n", _n);
 	printf("Ratio of terrain deformation(K_sign): \t%.3f\n", _K_sign); 
 	printf("Slope slip ratio(s_mean, s_std): \t%.3f \t%0.3f\n", _s_mean, _s_std);
+	printf("\n\t== OTHER PARAMETERS ==\n\n");
+	printf("Forward/backward velocity threshold to apply slippage: \t%.3f \t(m/s)\t%0.3f \t(m/s)\n", _v_threshod_to_apply_slippage_f, _v_threshod_to_apply_slippage_b);
+	printf("Forward/backward velocity threshold to apply slippage due to slope: \t%.3f \t(m/s)\t%0.3f \t(m/s)\n", _v_threshod_to_apply_slopeslip_f, _v_threshod_to_apply_slopeslip_b);
 	printf("\n");
 	printf("\n");
 	printf("***************************************\n");

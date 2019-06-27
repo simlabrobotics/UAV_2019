@@ -32,21 +32,24 @@
     <property name="steer_rwheel" value="srmotor"/>
     <property name="steer_velocity_limit" value="50"/>
     <property name="velocity_limit" value="20"/>
-    <property name="velocity_threshold_to_apply_slippage" value="0.3"/>
+    <property name="velocity_threshold_to_apply_slippage_f" value="0.3"/>
+    <property name="velocity_threshold_to_apply_slippage_b" value="-0.3"/>
     <property name="tire_radius(R_tire|m)" value="1.0308"/>
     <property name="tire_contact_length(b_init|m)" value="0.2"/>
     <property name="tire_contact_width(w|m)" value="0.39116"/>
     <property name="mass(m|kg)" value="3960"/>
     <property name="gravitational_acc(g|m/s^2)" value="9.81"/>
     <property name="soil_adhesiveness(c|Pa)" value="4640"/>
-    <property name="inertial_friction_angle(pi|deg)" value="19.9"/>
+    <property name="internal_shearing_resistance(pi|deg)" value="19.9"/>
     <property name="shear_modulus_of_elasticity(K|m)" value="0.0212"/>
     <property name="cohesive_modulus_of_terrain_deformation(k_c|Pa)" value="29790"/>
     <property name="frictional_modulus_of_terrain_deformation(k_pi|Pa)" value="2083000"/>
     <property name="exponent_of_terrain_deformation(n)" value="0.8"/>
     <property name="slope_slip_ratio_mean(s_mean)" value="0.75"/>
     <property name="slope_slip_ratio_std(s_std)" value="0.1"/>
-    <property name="ratio_of_terrain_deformation(K_sign)" value="0.15"/>
+    <property name="ratio_of_terrain_deformation(K_sign)" value="0.0000378"/>
+    <property name="velocity_threshold_to_apply_slopeslip_f(v_th_slopeslip_f|m/s)" value="0.3"/>
+    <property name="velocity_threshold_to_apply_slopeslip_b(v_th_slopeslip_b|m/s)" value="-0.3"/>
   </specification>
 
 </Device>

@@ -320,7 +320,6 @@ void LateralForceDataCallback(std::vector<double>& data)
 void SetupDAQ()
 {
 	vector<string_type> datanames;
-	TCHAR dataname[256];
 	bool plotCreated;
 	rID pid, did;
 

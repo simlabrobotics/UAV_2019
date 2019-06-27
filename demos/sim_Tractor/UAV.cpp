@@ -232,6 +232,15 @@ void UAV::onMessage(int id, kaiMsg &msg)
 	}
 	break;
 
+	case UAVP_RESET_COVERAGE:
+	{
+		if (NULL != _wc)
+		{
+			_wc->command(UAVDRV_DATAPORT_RESET_WORK);
+		}
+	}
+	break;
+
 	case UAVP_REQ_SLIP_ANGLE:
 	{
 		kaiSocket* client = findClient(id);
@@ -670,8 +679,8 @@ void UAV::collectGyroData(std::vector<double>& data, int channel)
 	if (_gyro && _gyro->readDeviceValue(val, sizeof(float) * 6) > 0)
 	{
 		val[4] *= -1.0f;
-		val[3] += M_PI;
-		if (val[3] > M_PI) val[3] -= 2 * M_PI;
+		val[3] += (float)M_PI;
+		if (val[3] > M_PI) val[3] -= (float)(2 * M_PI);
 		data.push_back(val[5] * RADIAN);
 		data.push_back(val[4] * RADIAN);
 		data.push_back(val[3] * RADIAN);

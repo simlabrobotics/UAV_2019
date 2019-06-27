@@ -6,6 +6,7 @@
 #include <rlab/utils/rSampleUtil.h>
 #include <rlab/utils/rParseUtil.h>
 #include "rDeviceUAVGrid.h"
+#include "UAV_cmd.h"
 
 //
 // MAX_SINGLE_DEVICE_BUFFER_SIZE_TO_SEND is definded in rxsdk(rxDeviceManager.cpp) as...
@@ -225,8 +226,22 @@ int rDeviceUAVGrid::writeDeviceValue(void* buffer, int len, int port)
 		_tool_activated = *(int*)buffer == 0 ? false : true;
 		return sizeof(int);
 	}
-	else
-		return 0;
+	
+	return 0;
+}
+
+int rDeviceUAVGrid::command(int cmd, int arg, void* udata, int port)
+{
+	switch (cmd)
+	{
+	case UAVDRV_DATAPORT_RESET_WORK:
+	{
+		Reset();
+	}
+	break;
+	}
+
+	return 0;
 }
 
 int rDeviceUAVGrid::monitorDeviceValue(void* buffer, int len, int port)

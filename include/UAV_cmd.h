@@ -14,6 +14,7 @@
 #define UAVDRV_DATAPORT_SET_VEL_TARGET				(253)	// set (wL_des, wR_des) or (v_des, th_des)
 #define UAVDRV_DATAPORT_SET_MAXIMUM_VEL				(252)	// set (wL_max, wR_max) or (v_max, th_max)
 #define UAVDRV_DATAPORT_SET_PARAMETER				(127)
+#define UAVDRV_DATAPORT_RESET_WORK					(126)	// reset work statistics
 
 // port definition for monitoring UAV drive devices
 #define UAVDRV_MONITORPORT_POSE						(0)

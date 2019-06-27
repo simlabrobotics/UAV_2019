@@ -160,25 +160,60 @@
 
 
 /******************************************************************************
+Reset working coverage data.
+*/
+#define UAVP_RESET_COVERAGE				(24)
+
+
+/******************************************************************************
  Set parameter
  @arg1 parameter type
-	1: lateral resistance
-	2: gravitational acceleration in m/s^2
-	3: slip ratio mean and std
-	4: maximum wheel angular velocity in rad/s
-	5: maximum wheel angular acceleration rad/s^2
-	6: velocity threshold to apply slippage in m/s
-	7: wheel velocity noise mean and std
-	8: deformation modulus
-	9: internal shearing resistance
-	10: cohesive modulus of terrain deformation
-	11: frictional modulus of terrain deformation
-	12: exponent of terrain deformation
-	101: tread length in meter
-	102: track length in meter
-	103: track width in meter
-	104: vehicle mass in kg
-	105: wheel(sprocket) radius
+	In case of differential-drive vehicle,
+		1: lateral resistance
+		2: gravitational acceleration in m/s^2
+		3: slip ratio mean and std
+		4: maximum wheel angular velocity in rad/s
+		5: maximum wheel angular acceleration rad/s^2
+		6: velocity threshold to apply slippage in m/s
+		7: wheel velocity noise mean and std
+		8: deformation modulus
+		9: internal shearing resistance
+		10: cohesive modulus of terrain deformation
+		11: frictional modulus of terrain deformation
+		12: exponent of terrain deformation
+		101: tread length in meter
+		102: track length in meter
+		103: track width in meter
+		104: vehicle mass in kg
+		105: wheel(sprocket) radius
+	In case of car-like vehicle,
+		257: vehicle mass in kg
+		258: vehicle moment of inertia at COG(Iz)
+		259: gravitational acceleration in m/s^2
+		260: slip ratio mean and std
+		261: maximum velocity in m/s
+		262: maximum acceleration in m/s^2
+		263: maximum steer angle in degree
+		264: maximum steer velocity in deg/s
+		265: steer ratio
+		266: wheel velocity noise mean and std
+		271: forward/backward velocity threshold to apply slippage in m/s
+		272: Cf
+		273: Cr
+		274: Lf
+		275: Lr
+		281: forward/backward velocity threshold to apply slippage due to slope in m/s
+		282: tire radius in meter
+		283: tire contact length in meter
+		284: tire contact width in meter
+		285: soil adhesiveness in Pa
+		286: internal shearing resistance in degree
+		287: shear modulus of elasticity in meter
+		288: cohesive modulus of terrain deformation in Pa
+		289: frictional modulus of terrain deformation in Pa
+		290: exponent of terrain deformation
+		291: slope slip ratio mean and std
+		292: ratio of terrain deformation
  @arg2 parameter value 1
  @arg3 parameter value 2
  @arg4 parameter value 3
