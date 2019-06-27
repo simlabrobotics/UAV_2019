@@ -111,31 +111,21 @@ void UAV::onMessage(int id, kaiMsg &msg)
 		feedback.reset();
 		feedback.begin();
 
-		if (NULL != _gyro)
+		if (NULL != _drive)
 		{
 			float val[6];
-			_gyro->readDeviceValue(val, sizeof(val));
-			float angle = val[5] * RADIAN;
-			feedback << angle;
-			//printf("Heading angle: %.3f\n", angle);
+			_drive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_POSE);
+			float heading = val[3] * RADIAN;
+			float x = val[0];
+			float y = val[1];
+			float z = val[2];
+			feedback << heading << x << y << z;
+			//printf("Heading angle: %.3f\n", heading);
 		}
 		else
 		{
 			float nil(0.0f);
-			feedback << nil;
-		}
-
-		if (NULL != _gps)
-		{
-			float val[3];
-			_gps->readDeviceValue(val, sizeof(float) * 3);
-			feedback << val[0] << val[1] << val[2];
-			//printf("<< GPS: %.1f\t%.1f\t%.1f \n", val[0], val[1], val[2]);
-		}
-		else
-		{
-			float nil(0.0f);
-			feedback << nil << nil << nil;
+			feedback << nil << nil << nil << nil;
 		}
 
 		feedback.id(UAVP_GET_SENSORS);
@@ -317,7 +307,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 		feedback.reset();
 		feedback.begin();
 
-		if (NULL != _gyro)
+		/*if (NULL != _gyro)
 		{
 			float val[6];
 			_gyro->readDeviceValue(val, sizeof(val));
@@ -326,6 +316,21 @@ void UAV::onMessage(int id, kaiMsg &msg)
 			angle[0] += 180.0f;
 			if (angle[0] > 180.0f) angle[0] -= 360.0f;
 			feedback << angle[2] << angle[1] << angle[0];
+		}
+		else
+		{
+			float nil(0.0f);
+			feedback << nil << nil << nil;
+		}*/
+
+		if (NULL != _drive)
+		{
+			float val[6];
+			_drive->monitorDeviceValue(val, sizeof(val), UAVDRV_MONITORPORT_POSE);
+			float heading = val[3] * RADIAN;
+			float pitch = val[4] * RADIAN;
+			float roll = val[5] * RADIAN;
+			feedback << heading << pitch << roll;
 		}
 		else
 		{

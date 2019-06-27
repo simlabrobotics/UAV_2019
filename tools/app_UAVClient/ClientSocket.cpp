@@ -137,7 +137,7 @@ void CClientSocket::resetPose()
 	_msgSend->reset();
 	_msgSend->id(UAVP_SET_VEHICLE_POSE);
 	_msgSend->begin();
-	(*_msgSend) << (float)10.0f << (float)10.0f << (float)45.0f << (float)0.0f;
+	(*_msgSend) << (float)20.0f << (float)10.0f << (float)45.0f << (float)0.0f;
 	_msgSend->end();
 	send(*_msgSend);
 }
