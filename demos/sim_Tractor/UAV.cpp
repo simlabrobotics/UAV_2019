@@ -57,7 +57,7 @@ void UAV::startServer(unsigned short port)
 
 void UAV::stopServer()
 {
-	stop();
+	//stop();
 }
 
 void UAV::onClose(int id)

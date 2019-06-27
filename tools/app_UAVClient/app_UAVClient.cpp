@@ -22,11 +22,15 @@ float pto_des = 0.0f;
 ///////////////////////////////////////////////////////////////
 
 char* serverIP = "127.0.0.1";
+unsigned short serverPort = 5251;
 
 int main(int argc, char *argv[])
 {
 	if (argc > 1) {
-		 serverIP = argv[1];
+		serverIP = argv[1];
+	}
+	if (argc > 2) {
+		serverPort = (unsigned short)atoi(argv[2]);
 	}
 
 	kaiInitialize();
@@ -35,7 +39,7 @@ int main(int argc, char *argv[])
 	CClientSocket client;
 	client.create(true, kaiON_MESSAGE | kaiON_SEND);
 	// connect to the server.
-	if (kaiSUCCESS != client.connect(serverIP, 5250))
+	if (kaiSUCCESS != client.connect(serverIP, serverPort))
 	{
 		printf("ERROR: FAIL TO CONNECT TO SIMULATOR !\n");
 		goto __finish;
