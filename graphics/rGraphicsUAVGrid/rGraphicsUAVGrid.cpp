@@ -294,7 +294,13 @@ void rGraphicsUAVGrid::onRender(double dTime)
 		}
 		else
 		{
-			show(_hGridOccupied, false);
+			setVertexArray(_hGridOccupied, _vertexArrayOccupied, 0);
+			setVertexIndices(_hGridOccupied, _indexArrayOccupied, 0);
+			setColorArray(_hGridOccupied, vertexColor, 1);
+			setColorBinding(_hGridOccupied, rGraphicsAPI::BIND_OVERALL);
+			enableLighting(_hGridOccupied, false);
+			setMode(_hGridOccupied, rGraphicsAPI::LINES/*QUADS*/);
+			show(_hGridOccupied, true);
 		}
 	}
 }
@@ -314,7 +320,7 @@ void rGraphicsUAVGrid::onDevice(double dTime, DWORD dSize, BYTE* dData)
 
 	for (int i=0; i<read_size; i++)
 	{
-		if (!_byTrace[read_offset+i] && (dData+12)[i])
+		if (_byTrace[read_offset+i] != (dData+12)[i])
 		{
 			_cell_count_occupied++;
 			_byTrace[read_offset+i] = (dData+12)[i];
