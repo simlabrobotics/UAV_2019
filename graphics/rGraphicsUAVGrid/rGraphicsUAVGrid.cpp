@@ -294,13 +294,14 @@ void rGraphicsUAVGrid::onRender(double dTime)
 		}
 		else
 		{
-			setVertexArray(_hGridOccupied, _vertexArrayOccupied, 0);
-			setVertexIndices(_hGridOccupied, _indexArrayOccupied, 0);
-			setColorArray(_hGridOccupied, vertexColor, 1);
-			setColorBinding(_hGridOccupied, rGraphicsAPI::BIND_OVERALL);
-			enableLighting(_hGridOccupied, false);
-			setMode(_hGridOccupied, rGraphicsAPI::LINES/*QUADS*/);
-			show(_hGridOccupied, true);
+			//setVertexArray(_hGridOccupied, _vertexArrayOccupied, 0);
+			//setVertexIndices(_hGridOccupied, _indexArrayOccupied, 0);
+			//setColorArray(_hGridOccupied, vertexColor, 1);
+			//setColorBinding(_hGridOccupied, rGraphicsAPI::BIND_OVERALL);
+			//enableLighting(_hGridOccupied, false);
+			//setMode(_hGridOccupied, rGraphicsAPI::LINES/*QUADS*/);
+			//show(_hGridOccupied, true);
+			show(_hGridOccupied, false);
 		}
 	}
 }

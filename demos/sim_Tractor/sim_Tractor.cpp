@@ -88,7 +88,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			if (uav[uav_no])
 			{
-				rxSystem* WC = env->findSystem(appConf.emlWCName(uav_no));
+				string_type wa_name = appConf.emlName() + _T("::") + appConf.emlWCName(uav_no);
+				rxSystem* WC = env->findSystem(wa_name);
 				if (WC)
 				{
 					uav[uav_no]->setDeviceWP(WC->findDevice(_T("WP")));
@@ -219,7 +220,6 @@ void MyControlCallback(rTime time, void* data)
 			val = pto_des;
 			pto->writeDeviceValue(&val, sizeof(val));
 		}
-
 
 		rxSystem* WC = env->findSystem(appConf.emlWCName(uav_no));
 		if (WC)

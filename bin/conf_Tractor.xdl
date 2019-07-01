@@ -45,7 +45,7 @@
 
   <property name="eml_wc1_name" value="WorkAreaCalc1.aml"/>
 
-  <property name="eml_wc2_name" value="Environment::WorkAreaCalc2.aml"/>
+  <property name="eml_wc2_name" value="WorkAreaCalc2.aml"/>
 
   <property name="net_port_control1" value="5251"/>
 
