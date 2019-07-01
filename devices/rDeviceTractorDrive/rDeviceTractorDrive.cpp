@@ -318,6 +318,7 @@ int rDeviceTractorDrive::writeDeviceValue(void* buffer, int len, int port)
 					break;
 				case PTYPE_C_maximum_steer_velocity:
 					if (fvalue[1] > 0.0f) _steer_velocity_limit = fvalue[1] * DEGREE;
+					break;
 				case PTYPE_C_steer_ratio:
 					break;
 				case PTYPE_C_velocity_noise_mean_and_std:
@@ -536,6 +537,109 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
+
+
+	case UAVDRV_MONITORPORT_PARAMETER:
+	{
+		if (len >= 4 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				int *ivalue = (int*)buffer;
+				float *fvalue = (float*)buffer;
+				switch (ivalue[0])
+				{
+				case PTYPE_C_vehicle_mass:
+					fvalue[1] = _m;
+					break;
+				case PTYPE_C_vehicle_moment_of_inertia_at_COG:
+					fvalue[1] = _Iz;
+					break;
+				case PTYPE_C_gravitational_acceleration:
+					fvalue[1] = _g;
+					break;
+				case PTYPE_C_slip_ratio_mean_and_std:
+					break;
+				case PTYPE_C_maximum_velocity:
+					fvalue[1] =  _velocity_limit;
+					break;
+				case PTYPE_C_maximum_acceleration:
+					fvalue[1] = _acceleration_limit;
+					break;
+				case PTYPE_C_maximum_steer_angle:
+					fvalue[1] = _steer_limit * RADIAN;
+					break;
+				case PTYPE_C_maximum_steer_velocity:
+					fvalue[1] = _steer_velocity_limit * RADIAN;
+				case PTYPE_C_steer_ratio:
+					break;
+				case PTYPE_C_velocity_noise_mean_and_std:
+					break;
+				case PTYPE_C_velocity_threshold_to_apply_slippage:
+					fvalue[1] = _v_threshod_to_apply_slippage_f;
+					fvalue[2] = _v_threshod_to_apply_slippage_b;
+					break;
+				case PTYPE_C_Cf:
+					fvalue[1] = _Cf;
+					break;
+				case PTYPE_C_Cr:
+					fvalue[1] = _Cr;
+					break;
+				case PTYPE_C_Lf:
+					fvalue[1] =  _Lf;
+					break;
+				case PTYPE_C_Lr:
+					fvalue[1] =  _Lr;
+					break;
+				case PTYPE_C_velocity_threshold_to_apply_slippage_due_to_slope:
+					fvalue[1] = _v_threshod_to_apply_slopeslip_f;
+					fvalue[2] = _v_threshod_to_apply_slopeslip_b;
+					break;
+				case PTYPE_C_tire_radius:
+					fvalue[1] = _tire_r;
+					break;
+				case PTYPE_C_tire_contact_length:
+					fvalue[1] = _tire_b;
+					break;
+				case PTYPE_C_tire_contact_width:
+					fvalue[1] = _tire_w;
+					break;
+				case PTYPE_C_soil_adhesiveness:
+					fvalue[1] = _c;
+					break;
+				case PTYPE_C_internal_shearing_resistance:
+					fvalue[1] = _pi;
+					break;
+				case PTYPE_C_shear_modulus_of_elasticity:
+					fvalue[1] = _K;
+					break;
+				case PTYPE_C_cohesive_modulus_of_terrain_deformation:
+					fvalue[1] = _k_c;
+					break;
+				case PTYPE_C_frictional_modulus_of_terrain_deformation:
+					fvalue[1] = _k_pi;
+					break;
+				case PTYPE_C_exponent_of_terrain_deformation:
+					fvalue[1] = _n;
+					break;
+				case PTYPE_C_slope_slip_ratio_mean_and_std:
+					fvalue[1] = _s_mean;
+					fvalue[1] = _s_std;
+					break;
+				case PTYPE_C_ratio_of_terrain_deformation:
+					fvalue[1] = _K_sign;
+					break;
+				}
+			}
+			_lock.unlock();
+			return 4 * sizeof(float);
+		}
+	}
+	break;
+
+
+
+
 	default:
 		// Exception! Unknown data port.
 		return 0;
@@ -610,8 +714,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		/////////////////////////////////////////////////////////////////////
 		// calcurate new position and orientation
 		//
-		if (_v >= _v_threshod_to_apply_slippage_f ||
-			_v <= _v_threshod_to_apply_slippage_b)
+		if (_v >= _v_threshod_to_apply_slippage_f /*|| _v <= _v_threshod_to_apply_slippage_b*/)
 		{
 			if (_Iz == 0 || _m == 0)
 			{
@@ -719,7 +822,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		if (_v >= _v_threshod_to_apply_slopeslip_f ||
 			_v <= _v_threshod_to_apply_slopeslip_b)
 		{
-			float k_sign = (sample_uniform01() > 0.5 ? 1 : -1);
+			float k_sign = (sample_uniform01() > (_K_sign * _m) ? 1 : -1);
 			float slope_slip_ratio = sample_quasi_normal(_s_mean, _s_std);
 			float tire_b;
 			std::vector<float> a_slope;

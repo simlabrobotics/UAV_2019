@@ -40,6 +40,8 @@ void rDeviceUAVPTO::onCreate(const rDeviceContext& rdc)
 		_q_offset[i] = 0.0f;
 		_reduction[i] =  1.0f;
 		_reduction_inv[i] = 1.0f;
+		_q_PTO_active[i] = 0.0f;
+		_q_PTO_deactive[i] = 0.0f;
 	}
 	if (NULL != (prop = getProperty(_T("joint_limit_lower"))))
 	{
@@ -87,6 +89,19 @@ void rDeviceUAVPTO::onCreate(const rDeviceContext& rdc)
 			if (_q_offset[i] == FLT_MAX) _q_offset[i] = 0.0f;
 	}
 
+	if (NULL != (prop = getProperty(_T("PTO_active_angle"))))
+	{
+		parse_vector(_q_PTO_active, RD_DOF_MAX, prop);
+		for (int i = 0; i<RD_DOF_MAX; i++)
+			_q_PTO_active[i] = (_q_PTO_active[i] == -FLT_MAX ? _q_PTO_active[0] : _q_PTO_active[i] * DEGREE);
+	}
+	if (NULL != (prop = getProperty(_T("PTO_deactive_angle"))))
+	{
+		parse_vector(_q_PTO_deactive, RD_DOF_MAX, prop);
+		for (int i = 0; i<RD_DOF_MAX; i++)
+			_q_PTO_deactive[i] = (_q_PTO_deactive[i] == -FLT_MAX ? _q_PTO_deactive[0] : _q_PTO_deactive[i] * DEGREE);
+	}
+
 	_period = 0.0f;
 }
 
@@ -121,7 +136,7 @@ void rDeviceUAVPTO::onTerminate()
 	RD_DEVICE_CLASS(Base)::onTerminate();
 }
 
-int	rDeviceUAVPTO::monitorDeviceValue(void* buffer, int len, int port)
+int	rDeviceUAVPTO::readDeviceValue(void* buffer, int len, int port)
 {
 	if (len >= (int)_dim * (int)sizeof(float))
 	{
@@ -129,6 +144,15 @@ int	rDeviceUAVPTO::monitorDeviceValue(void* buffer, int len, int port)
 		memcpy(buffer, _q, sizeof(float)*_dim);
 		_lock.unlock();
 		return sizeof(float) * _dim;
+	}
+	else if (len >= (int)_dim * (int)sizeof(char))
+	{
+		_lock.lock();
+		char state[RD_DOF_MAX];
+		_isActivated(state);
+		memcpy(buffer, state, sizeof(char)*_dim);
+		_lock.unlock();
+		return sizeof(char) * _dim;
 	}
 	else
 		return 0;
@@ -145,7 +169,19 @@ int rDeviceUAVPTO::writeDeviceValue(void* buffer, int len, int port)
 				_q_des[i] = value[i]*_reduction_inv[i];
 		}
 		_lock.unlock();
-		return (_dim * sizeof(float));;
+		return (_dim * sizeof(float));
+	}
+	else if (len >= _dim * sizeof(char))
+	{
+		// 0: deactivate PTO, 1: activate PTO
+		char* value = (char*)buffer;
+		_lock.lock();
+		{
+			for (int i = 0; i < _dim; i++)
+				_q_des[i] = (value[i] == 0 ? _q_PTO_deactive[i] : _q_PTO_active[i])*_reduction_inv[i];
+		}
+		_lock.unlock();
+		return (_dim * sizeof(char));
 	}
 	else
 		return 0;
@@ -188,6 +224,15 @@ void rDeviceUAVPTO::updateWriteValue(rTime time)
 	_lock.unlock();
 }
 
+void rDeviceUAVPTO::_isActivated(char* state)
+{
+	float q_threshold;
+	for (int i = 0; i < _dim; i++)
+	{
+		q_threshold = abs(_q_PTO_active[i] - _q_PTO_deactive[i]) * 0.05; // +/-5%
+		state[i] = ((_q[i] > (_q_PTO_active[i] - q_threshold) && _q[i] < (_q_PTO_active[i] + q_threshold)) ? 1 : 0);
+	}
+}
 
 } // namespace plugin
 } // namespace rlab

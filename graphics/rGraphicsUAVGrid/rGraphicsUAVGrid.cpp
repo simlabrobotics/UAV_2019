@@ -15,13 +15,13 @@ namespace plugin {
 rGraphicsUAVGrid::rGraphicsUAVGrid()
 : _hGrid(-1)
 , _hGridOccupied(-1)
+, _hGridWorkArea(-1)
 , _hNormal(-1)
 , _byTrace(NULL)
 , _cols(0)
 , _rows(0)
-, _cell_count_total(0)
-, _cell_count_occupied(0)
-, _cell_coord(NULL)
+, _cell_count(0)
+//, _cell_coord(NULL)
 , _cell_size(1)
 , _grid_coord_z(0.0f)
 , _grid_coord_z_occupied(0.0f)
@@ -30,22 +30,27 @@ rGraphicsUAVGrid::rGraphicsUAVGrid()
 , _grid_visible_normal(false)
 , _indexArray(NULL)
 , _indexArrayOccupied(NULL)
+, _indexArrayWorkArea(NULL)
 , _indexArrayNormal(NULL)
 , _vertexArray(NULL)
 , _vertexArrayOccupied(NULL)
+, _vertexArrayWorkArea(NULL)
 , _vertexArrayNormal(NULL)
 {
 	_grid_color[0] = _grid_color[1] = _grid_color[2] = _grid_color[3] = 1.0f;
+	_grid_color_wa[0] = _grid_color_wa[1] = _grid_color_wa[2] = _grid_color_wa[3] = 1.0f;
 	_grid_color_occupied[0] = _grid_color_occupied[1] = _grid_color_occupied[2] = _grid_color_occupied[3] = 1.0f;
 }
 
 rGraphicsUAVGrid::~rGraphicsUAVGrid()
 {
 	if (_byTrace) delete[] _byTrace;
-	if (_cell_coord) delete[] _cell_coord;
+	//if (_cell_coord) delete[] _cell_coord;
 	if (_indexArray) delete[] _indexArray;
+	if (_indexArrayWorkArea) delete[] _indexArrayWorkArea;
 	if (_indexArrayOccupied) delete[] _indexArrayOccupied;
 	if (_vertexArray) delete[] _vertexArray;
+	if (_vertexArrayWorkArea) delete[] _vertexArrayWorkArea;
 	if (_vertexArrayOccupied) delete[] _vertexArrayOccupied;
 	if (_indexArrayNormal) delete[] _indexArrayNormal;
 	if (_vertexArrayNormal) delete[] _vertexArrayNormal;
@@ -60,11 +65,13 @@ void rGraphicsUAVGrid::onCreate(double dTime)
 	float hmap_map_length;
 	float hmap_map_height_min;
 	float hmap_map_height_max;
+	string_type hmap_path_wa;
 	
 	prop = getProperty(_T("CELL_SIZE")); _cell_size = (float)_tstof(prop);
 	prop = getProperty(_T("GRID_HEIGHT")); _grid_coord_z = (float)_tstof(prop);
 	prop = getProperty(_T("GRID_HEIGHT_OCCUPIED")); _grid_coord_z_occupied = (float)_tstof(prop);
 	prop = getProperty(_T("GRID_COLOR")); parse_vector(_grid_color, 4, prop);
+	prop = getProperty(_T("GRID_COLOR_WA")); parse_vector(_grid_color_wa, 4, prop);
 	prop = getProperty(_T("GRID_COLOR_OCCUPIED")); parse_vector(_grid_color_occupied, 4, prop);
 	prop = getProperty(_T("GRID_VISIBLE")); if (!_tcsicmp(prop, _T("true")) || !_tcsicmp(prop, _T("yes"))) _grid_visible = true;
 	prop = getProperty(_T("GRID_VISIBLE_OCCUPIED")); if (!_tcsicmp(prop, _T("true")) || !_tcsicmp(prop, _T("yes"))) _grid_visible_occupied = true;
@@ -76,51 +83,62 @@ void rGraphicsUAVGrid::onCreate(double dTime)
 	prop = getProperty(_T("HMAP_L")); hmap_map_length = (float)_tstof(prop);
 	prop = getProperty(_T("HMAP_H_min")); hmap_map_height_min = (float)_tstof(prop);
 	prop = getProperty(_T("HMAP_H_max")); hmap_map_height_max = (float)_tstof(prop);
+	prop = getProperty(_T("HMAP_PATH_WA")); if (prop) hmap_path_wa = prop;
 
 	// initiate height map
 	if (!_hmap.Create(hmap_path, hmap_map_width, hmap_map_length, hmap_map_height_min, hmap_map_height_max))
 	{
 		assert(0 && "ERROR! rGraphicsUAVGrid: failed to load height map.\n");
 	}
+	/*if (!_hmap_wa.Create(hmap_path_wa, hmap_map_width, hmap_map_length, hmap_map_height_min, hmap_map_height_max))
+	{
+		assert(0 && "ERROR! rGraphicsUAVGrid: failed to load work-area map.\n");
+	}*/
 
 	if (_cols > 0 && _rows > 0)
 	{
-		_cell_count_total = _rows * _cols;
-		_cell_count_occupied = 0;
-		_byTrace = new unsigned char[_cell_count_total];
-		memset(_byTrace, 0, sizeof(_byTrace[0])*_cell_count_total);
+		_cell_count = _rows * _cols;
 
-		_cell_coord = new Coord3D[_cell_count_total];
+		/*_cell_coord = new Coord3D[_cell_count];
 		for (int row=0; row<_rows; row++) {
-			for (int col=0; col<_cols; col++) {
-				cell_index = row * _cols + col;
-				_cell_coord[cell_index][0] = (float)((col - (int)(_cols * 0.5)) + 0.5) * _cell_size;
-				_cell_coord[cell_index][1] = (float)((row - (int)(_rows * 0.5)) + 0.5) * _cell_size;
-				_cell_coord[cell_index][2] = 0.0f;
-			}
+		for (int col=0; col<_cols; col++) {
+		cell_index = row * _cols + col;
+		_cell_coord[cell_index][0] = (float)((col - (int)(_cols * 0.5)) + 0.5) * _cell_size;
+		_cell_coord[cell_index][1] = (float)((row - (int)(_rows * 0.5)) + 0.5) * _cell_size;
+		_cell_coord[cell_index][2] = 0.0f;
 		}
+		}*/
 
-		int vertexCnt = (_rows +1) * (_cols + 1);
+		int vertexCnt = (_rows + 1) * (_cols + 1);
 		int quadCnt = _rows * _cols;
 		int vertex_index = 0;
-		
-		// index/vertex array to draw grid.
-		_indexArray = new int[quadCnt*8];			// 8-vertex per a quad (4 lines)
-		_vertexArray = new float[vertexCnt*3];		// 3D coord per a vertex
-
-		// index/vertex array to draw vertex normal.
-		_indexArrayNormal = new int[vertexCnt*2];		// 2-vertex(normal vector) per a vertex
-		_vertexArrayNormal = new float[vertexCnt*2*3];	// 3D coord per a vertex
-		
-		// index/vertex array to draw work-cells.
-		_indexArrayOccupied = new int[quadCnt*8];	// 8-vertex per a quad (4 lines)
-		_vertexArrayOccupied = new float[vertexCnt*3];
-
-		// color array
-		float vertexColor[4] = {0, 0, 0, 1.0f};
+		float vertexColor[4] = { 0, 0, 0, 1.0f }; // color array
 		float vertex_coord_x, vertex_coord_y;
 		float height;
 		float normal[3], normal_len = 0.2f;
+
+		if (_grid_visible) {
+			// index/vertex array to draw grid.
+			_indexArray = new int[quadCnt * 8];			// 8-vertex per a quad (4 lines)
+			_vertexArray = new float[vertexCnt * 3];		// 3D coord per a vertex
+		}
+
+		if (_grid_visible_normal) {
+			// index/vertex array to draw vertex normal.
+			_indexArrayNormal = new int[vertexCnt * 2];		// 2-vertex(normal vector) per a vertex
+			_vertexArrayNormal = new float[vertexCnt * 2 * 3];	// 3D coord per a vertex
+		}
+
+		if (_grid_visible_occupied) {
+			_byTrace = new unsigned char[_cell_count];
+			memset(_byTrace, 0x10, sizeof(_byTrace[0])*_cell_count);
+
+			// index/vertex array to draw work-cells.
+			_indexArrayOccupied = new int[quadCnt * 8];	// 8-vertex per a quad (4 lines)
+			_vertexArrayOccupied = new float[vertexCnt * 3];
+			_indexArrayWorkArea = new int[quadCnt * 8];
+			_vertexArrayWorkArea = new float[vertexCnt * 3];
+		}
 
 		for (int row=0; row<_rows+1; row++) {
 			for (int col=0; col<_cols+1; col++) {
@@ -129,37 +147,51 @@ void rGraphicsUAVGrid::onCreate(double dTime)
 				vertex_coord_y = (float)((row - (int)(_rows * 0.5))) * _cell_size;
 				_hmap.GetHeight(vertex_coord_x, vertex_coord_y, height);
 
-				_vertexArray[3*vertex_index+0] = vertex_coord_x;
-				_vertexArray[3*vertex_index+1] = vertex_coord_y;
-				_vertexArray[3*vertex_index+2] = _grid_coord_z + height;
-				_vertexArrayOccupied[3*vertex_index+0] = vertex_coord_x;
-				_vertexArrayOccupied[3*vertex_index+1] = vertex_coord_y;
-				_vertexArrayOccupied[3*vertex_index+2] = _grid_coord_z_occupied + height;
+				if (_vertexArray) {
+					_vertexArray[3 * vertex_index + 0] = vertex_coord_x;
+					_vertexArray[3 * vertex_index + 1] = vertex_coord_y;
+					_vertexArray[3 * vertex_index + 2] = _grid_coord_z + height;
+				}
+				if (_vertexArrayOccupied) {
+					_vertexArrayOccupied[3 * vertex_index + 0] = vertex_coord_x;
+					_vertexArrayOccupied[3 * vertex_index + 1] = vertex_coord_y;
+					_vertexArrayOccupied[3 * vertex_index + 2] = _grid_coord_z_occupied + height;
+				}
+				if (_vertexArrayWorkArea) {
+					_vertexArrayWorkArea[3 * vertex_index + 0] = vertex_coord_x;
+					_vertexArrayWorkArea[3 * vertex_index + 1] = vertex_coord_y;
+					_vertexArrayWorkArea[3 * vertex_index + 2] = _grid_coord_z_occupied + height;
+				}
 
 				_hmap.GetNormalEx(vertex_coord_x, vertex_coord_y, 1, normal);
-				_vertexArrayNormal[6*vertex_index+0] = vertex_coord_x;
-				_vertexArrayNormal[6*vertex_index+1] = vertex_coord_y;
-				_vertexArrayNormal[6*vertex_index+2] = _grid_coord_z + height;
-				_vertexArrayNormal[6*vertex_index+3] = vertex_coord_x + normal[0]*normal_len;
-				_vertexArrayNormal[6*vertex_index+4] = vertex_coord_y + normal[1]*normal_len;
-				_vertexArrayNormal[6*vertex_index+5] = _grid_coord_z + height + normal[2]*normal_len;
+				
+				if (_vertexArrayNormal && _indexArrayNormal) {
+					_vertexArrayNormal[6 * vertex_index + 0] = vertex_coord_x;
+					_vertexArrayNormal[6 * vertex_index + 1] = vertex_coord_y;
+					_vertexArrayNormal[6 * vertex_index + 2] = _grid_coord_z + height;
+					_vertexArrayNormal[6 * vertex_index + 3] = vertex_coord_x + normal[0] * normal_len;
+					_vertexArrayNormal[6 * vertex_index + 4] = vertex_coord_y + normal[1] * normal_len;
+					_vertexArrayNormal[6 * vertex_index + 5] = _grid_coord_z + height + normal[2] * normal_len;
 
-				_indexArrayNormal[2*vertex_index+0] = 2*vertex_index+0;
-				_indexArrayNormal[2*vertex_index+1] = 2*vertex_index+1;
+					_indexArrayNormal[2 * vertex_index + 0] = 2 * vertex_index + 0;
+					_indexArrayNormal[2 * vertex_index + 1] = 2 * vertex_index + 1;
+				}
 			}
 		}
 
-		vertex_index = 0;
-		for (int row=0; row<_rows; row++) {
-			for (int col=0; col<_cols; col++) {
-				_indexArray[vertex_index++] = row * (_cols + 1) + col;
-				_indexArray[vertex_index++] = row * (_cols + 1) + col + 1;
-				_indexArray[vertex_index++] = row * (_cols + 1) + col + 1;
-				_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
-				_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
-				_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col;
-				_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col;
-				_indexArray[vertex_index++] = row * (_cols + 1) + col;
+		if (_indexArray) {
+			vertex_index = 0;
+			for (int row = 0; row < _rows; row++) {
+				for (int col = 0; col < _cols; col++) {
+					_indexArray[vertex_index++] = row * (_cols + 1) + col;
+					_indexArray[vertex_index++] = row * (_cols + 1) + col + 1;
+					_indexArray[vertex_index++] = row * (_cols + 1) + col + 1;
+					_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
+					_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
+					_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col;
+					_indexArray[vertex_index++] = (row + 1) * (_cols + 1) + col;
+					_indexArray[vertex_index++] = row * (_cols + 1) + col;
+				}
 			}
 		}
 
@@ -176,13 +208,22 @@ void rGraphicsUAVGrid::onCreate(double dTime)
 
 		if (_grid_visible_occupied) {
 			_hGridOccupied = makeMesh();
-			setVertexArray(_hGridOccupied, _vertexArray, 0);
+			setVertexArray(_hGridOccupied, _vertexArrayOccupied, 0);
 			setVertexIndices(_hGridOccupied, _indexArrayOccupied, 0);
 			setColorArray(_hGridOccupied, vertexColor, 1);
 			setColorBinding(_hGridOccupied, rGraphicsAPI::BIND_OVERALL);
 			enableLighting(_hGridOccupied, false);
 			setMode(_hGridOccupied, rGraphicsAPI::LINES/*QUADS*/);
-			show(_hGridOccupied, true);
+			show(_hGridOccupied, false);
+
+			_hGridWorkArea = makeMesh();
+			setVertexArray(_hGridWorkArea, _vertexArrayWorkArea, 0);
+			setVertexIndices(_hGridWorkArea, _indexArrayWorkArea, 0);
+			setColorArray(_hGridWorkArea, vertexColor, 1);
+			setColorBinding(_hGridWorkArea, rGraphicsAPI::BIND_OVERALL);
+			enableLighting(_hGridWorkArea, false);
+			setMode(_hGridWorkArea, rGraphicsAPI::LINES/*QUADS*/);
+			show(_hGridWorkArea, false);
 		}
 
 		if (_grid_visible_normal) {
@@ -203,7 +244,7 @@ void rGraphicsUAVGrid::onDestroy(double dTime)
 
 void rGraphicsUAVGrid::onRender(double dTime)
 {
-	if (_cell_count_total <= 0) return;
+	if (_cell_count <= 0) return;
 
 	/*float R[9], r[3];
 	float cellRot[9], cellPos[3];
@@ -250,10 +291,11 @@ void rGraphicsUAVGrid::onRender(double dTime)
 		}
 	}
 
-	if (_hGridOccupied >= 0) {
+	if (_hGridOccupied >= 0 && _hGridWorkArea) {
 		int vertexCnt = (_rows +1) * (_cols + 1);
 		int quadCnt = _rows * _cols;
 		int vertex_index = 0;
+		int vertex_index_wa = 0;
 		int quad_index = 0;
 		float vertexColor[4] = {0, 0, 0, 1.0f};
 
@@ -262,17 +304,28 @@ void rGraphicsUAVGrid::onRender(double dTime)
 
 				quad_index = row * _cols + col;
 			
-				if (!_byTrace[quad_index])
-					continue;
-
-				_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col;
-				_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col + 1;
-				_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col + 1;
-				_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
-				_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
-				_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col;
-				_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col;
-				_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col;
+				if (_byTrace[quad_index] == 0x01)
+				{
+					_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col;
+					_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col + 1;
+					_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col + 1;
+					_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
+					_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col + 1;
+					_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col;
+					_indexArrayOccupied[vertex_index++] = (row + 1) * (_cols + 1) + col;
+					_indexArrayOccupied[vertex_index++] = row * (_cols + 1) + col;
+				}
+				else if (_byTrace[quad_index] == 0x00)
+				{
+					_indexArrayWorkArea[vertex_index_wa++] = row * (_cols + 1) + col;
+					_indexArrayWorkArea[vertex_index_wa++] = row * (_cols + 1) + col + 1;
+					_indexArrayWorkArea[vertex_index_wa++] = row * (_cols + 1) + col + 1;
+					_indexArrayWorkArea[vertex_index_wa++] = (row + 1) * (_cols + 1) + col + 1;
+					_indexArrayWorkArea[vertex_index_wa++] = (row + 1) * (_cols + 1) + col + 1;
+					_indexArrayWorkArea[vertex_index_wa++] = (row + 1) * (_cols + 1) + col;
+					_indexArrayWorkArea[vertex_index_wa++] = (row + 1) * (_cols + 1) + col;
+					_indexArrayWorkArea[vertex_index_wa++] = row * (_cols + 1) + col;
+				}
 			}
 		}
 
@@ -294,36 +347,47 @@ void rGraphicsUAVGrid::onRender(double dTime)
 		}
 		else
 		{
-			//setVertexArray(_hGridOccupied, _vertexArrayOccupied, 0);
-			//setVertexIndices(_hGridOccupied, _indexArrayOccupied, 0);
-			//setColorArray(_hGridOccupied, vertexColor, 1);
-			//setColorBinding(_hGridOccupied, rGraphicsAPI::BIND_OVERALL);
-			//enableLighting(_hGridOccupied, false);
-			//setMode(_hGridOccupied, rGraphicsAPI::LINES/*QUADS*/);
-			//show(_hGridOccupied, true);
 			show(_hGridOccupied, false);
+		}
+
+		if (vertex_index_wa > 0)
+		{
+			setVertexArray(_hGridWorkArea, _vertexArrayWorkArea, vertexCnt);
+			setVertexIndices(_hGridWorkArea, _indexArrayWorkArea, vertex_index_wa);
+			setColorArray(_hGridWorkArea, vertexColor, 1);
+			setColorBinding(_hGridWorkArea, rGraphicsAPI::BIND_OVERALL);
+			enableLighting(_hGridWorkArea, false);
+			setMode(_hGridWorkArea, rGraphicsAPI::LINES/*QUADS*/);
+
+			setColor(_hGridWorkArea, _grid_color_wa[0], _grid_color_wa[1], _grid_color_wa[2], _grid_color_wa[3]);
+
+			if (_grid_visible_occupied)
+				show(_hGridWorkArea, true); // force to show grid even though user turns off visiblity in rPlayer.
+		}
+		else
+		{
+			show(_hGridWorkArea, false);
 		}
 	}
 }
 
 void rGraphicsUAVGrid::onDevice(double dTime, DWORD dSize, BYTE* dData)
 {
-	if (_cell_count_total <= 0 || dSize < 12) return;
+	if (!_byTrace || _cell_count <= 0 || dSize < 12) return;
 
 	int read_index = ((int*)dData)[0];
 	int read_offset = ((int*)dData)[1];
 	int read_size = ((int*)dData)[2];
 
 	if (read_offset < 0 || 
-		read_offset >= _cell_count_total ||
-		read_offset + read_size > _cell_count_total)
+		read_offset >= _cell_count ||
+		read_offset + read_size > _cell_count)
 		return;
 
 	for (int i=0; i<read_size; i++)
 	{
 		if (_byTrace[read_offset+i] != (dData+12)[i])
 		{
-			_cell_count_occupied++;
 			_byTrace[read_offset+i] = (dData+12)[i];
 		}
 	}

@@ -50,11 +50,11 @@ private:
 	unsigned char* _byTrace;
 	int _cols;
 	int _rows;
-	int _cell_count_total;
-	int _cell_count_occupied;
+	int _cell_count;
 	float _cell_size;
 	float _grid_coord_z;
 	float _grid_color[4];
+	float _grid_color_wa[4];
 	float _grid_coord_z_occupied;
 	float _grid_color_occupied[4];
 	bool _grid_visible;
@@ -66,16 +66,20 @@ private:
 	float* _vertexArray;
 	float* _normalArray;
 
+	int _hGridWorkArea;
+	int* _indexArrayWorkArea;
+	float* _vertexArrayWorkArea;
+
 	int _hGridOccupied;
 	int* _indexArrayOccupied;
 	float* _vertexArrayOccupied;
 
-	struct Coord3D
+	/*struct Coord3D
 	{
 		float _xyz[3];
 		float& operator[] (const size_t index) { return _xyz[index]; }
 	};
-	Coord3D* _cell_coord;
+	Coord3D* _cell_coord;*/
 
 	HeightMap _hmap;
 

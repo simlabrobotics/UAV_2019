@@ -146,7 +146,7 @@ private:
 	float	_v_threshod_to_apply_slopeslip_f; // forward velocity threshold to apply slippage due to slope
 	float	_v_threshod_to_apply_slopeslip_b; // backward velocity threshold to apply slippage due to slope
 
-	// height map
+	// height map (to calculate vehicle pose wrt terrain)
 	HeightMap _hmap;
 	int _hmap_normal_window_size;
 };

@@ -13,6 +13,8 @@
     <property name="reduction" value="1"/>
     <property name="update_adj_kinematics" value="false"/>
     <property name="velocity_limit" value="30"/>
+    <property name="PTO_deactive_angle" value="0"/>
+    <property name="PTO_active_angle" value="30"/>
   </specification>
 
 </Device>

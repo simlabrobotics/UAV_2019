@@ -543,14 +543,16 @@ void UAV::onMovingPTO(const PTO &pto)
 {
 	if (_pto)
 	{
-		float angle = (pto.signal == 0 ? 0.0f : 30.0f*DEGREE);
-		_pto->writeDeviceValue(&angle, sizeof(float));
+		//float angle = (pto.signal == 0 ? 0.0f : 30.0f*DEGREE);
+		//_pto->writeDeviceValue(&angle, sizeof(float));
+		char active = (char)pto.signal;
+		_pto->writeDeviceValue(&active, sizeof(char));
 	}
-	if (_wc)
-	{
-		int activated = (pto.signal == 0 ? 0 : 1);
-		_wc->writeDeviceValue(&activated, sizeof(int)); // YYY: 작업기가 다 내려간 것을 확인해야 함.
-	}
+	//if (_wc)
+	//{
+	//	int activated = (pto.signal == 0 ? 0 : 1);
+	//	_wc->writeDeviceValue(&activated, sizeof(int)); // YYY: 작업기가 다 내려간 것을 확인해야 함.
+	//}
 }
 
 void UAV::onSetParam(const PARAMETER &param)

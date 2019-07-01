@@ -7,7 +7,7 @@
 #include <rlab/utils/rParseUtil.h>
 #include "rDeviceUAVGrid.h"
 #include "UAV_cmd.h"
-
+#include "HeightMap.h"
 //
 // MAX_SINGLE_DEVICE_BUFFER_SIZE_TO_SEND is definded in rxsdk(rxDeviceManager.cpp) as...
 //
@@ -36,14 +36,17 @@ rDeviceUAVGrid::rDeviceUAVGrid()
 : _tool_robotName(_T(""))
 , _tool_bodyName(_T(""))
 , _tool_deviceName(_T(""))
+, _tool_deviceName_PTO(_T(""))
 , _tool_bodyID(INVALID_RID)
 , _tool_deviceID(INVALID_RID)
+, _tool_deviceID_PTO(INVALID_RID)
 , _tool_width(1.0f)
 , _tool_type(TOOL_LINE)
-, _tool_activated(false)
+, _tool_activated(0)
 , _rows(1)
 , _cols(1)
 , _cell_count(1)
+, _cell_count_wa(0)
 , _cell_count_occupied(0)
 , _cell_size(0.1f)
 , _grid(NULL)
@@ -61,6 +64,11 @@ rDeviceUAVGrid::~rDeviceUAVGrid()
 void rDeviceUAVGrid::onCreate(const rDeviceContext& rdc)
 {
 	RD_DEVICE_CLASS(Base)::onCreate(rdc);
+}
+
+void rDeviceUAVGrid::onInit()
+{
+	RD_DEVICE_CLASS(Base)::onInit();
 
 	const TCHAR* prop;
 
@@ -71,20 +79,57 @@ void rDeviceUAVGrid::onCreate(const rDeviceContext& rdc)
 	if (_cell_size < 0)
 		_cell_size = 0.1f;
 
-	// row size
+	// row/column size
 	prop = getProperty(_T("row"));
 	if (prop)
 		_rows = _tstoi(prop);
 	if (_rows < 0)
 		_rows = 1;
 
-	// column size
 	prop = getProperty(_T("col"));
 	if (prop)
 		_cols = _tstoi(prop);
 	if (_cols < 0)
 		_cols = 1;
 
+	_cell_count = _cols * _rows;
+
+	// Initialize grid
+	_grid = new unsigned char[_cell_count];
+	memset(_grid, 0x0, sizeof(unsigned char) * _cell_count);
+	_cell_count_wa = _cell_count;
+	_cell_count_occupied = 0;
+
+	HeightMap hmap_wc;
+	string_type hmap_path = _T("");
+	float hmap_map_width = 0.0f;
+	float hmap_map_length = 0.0f;
+	prop = getProperty(_T("HMAP_PATH_WA")); if (prop) hmap_path = prop;
+	prop = getProperty(_T("HMAP_W")); if (prop) hmap_map_width = (float)_tstof(prop);
+	prop = getProperty(_T("HMAP_L")); if (prop) hmap_map_length = (float)_tstof(prop);
+	if (!hmap_wc.Create(hmap_path, hmap_map_width, hmap_map_length, 0.0f, 1.0f))
+	{
+		_tprintf(_T("ERROR: rDeviceUAVGrid: failed to load work-area map (%s)\n"), hmap_path.c_str());
+		//enable(false);
+	}
+	else
+	{
+		_cell_count_wa = 0;
+
+		for (int row = 0; row < _rows; row++) {
+			for (int col = 0; col < _cols; col++) {
+				float x = (float)((col - (int)(_cols * 0.5))) * _cell_size + (0.5 * _cell_size);
+				float y = (float)((row - (int)(_rows * 0.5))) * _cell_size + (0.5 * _cell_size);
+				float height;
+				hmap_wc.GetHeight(x, y, height);
+				if (height >= 0.5f)
+					_grid[row*_cols + col] |= 0x10; // mark it as a none-work-area-cell
+				else
+					_cell_count_wa++;
+			}
+		}
+	}
+	
 	// tool info
 	prop = getProperty(_T("TOOL_SYS_NAME"));
 	if (prop)
@@ -98,26 +143,14 @@ void rDeviceUAVGrid::onCreate(const rDeviceContext& rdc)
 	if (prop)
 		_tool_deviceName = prop;
 
-	// maximum buffer size to read data once
-	prop = getProperty(_T("READ_SIZE_MAX"));
+	prop = getProperty(_T("TOOL_DEVICE_NAME_PTO"));
 	if (prop)
-		_read_size_max = min(_tstoi(prop), RDEVICEGRID_READSIZE_MAX);
-
-	// Initialize
-	_grid = new unsigned char[_rows * _cols];
-
-	// Grid Initialize
-	memset(_grid, 0x0, sizeof(unsigned char) * (_rows * _cols));
-}
-
-void rDeviceUAVGrid::onInit()
-{
-	RD_DEVICE_CLASS(Base)::onInit();
+		_tool_deviceName_PTO = prop;
 
 	_tool_bodyID = _rdc.m_deviceAPI->getBodyID(_tool_robotName.c_str(), _tool_bodyName.c_str());
 	if (_tool_bodyID == INVALID_RID)
 	{
-		_tprintf(_T("ERROR: rDeviceVCRGrid: cannot find tool (system: %s, body: %s)\n"), _tool_robotName.c_str(), _tool_bodyName.c_str());
+		_tprintf(_T("ERROR: rDeviceUAVGrid: cannot find tool (system: %s, body: %s)\n"), _tool_robotName.c_str(), _tool_bodyName.c_str());
 		enable(false);
 	}
 
@@ -126,7 +159,7 @@ void rDeviceUAVGrid::onInit()
 	_tool_deviceID = _rdc.m_deviceAPI->getDeviceID(_tool_robotName.c_str(), _tool_deviceName.c_str());
 	if (_tool_deviceID == INVALID_RID)
 	{
-		_tprintf(_T("ERROR: rDeviceVCRGrid: cannot find tool. (system: %s, device: %s)\n"), _tool_robotName.c_str(), _tool_deviceName.c_str());
+		_tprintf(_T("ERROR: rDeviceUAVGrid: cannot find tool. (system: %s, device: %s)\n"), _tool_robotName.c_str(), _tool_deviceName.c_str());
 		enable(false);
 	}
 	else
@@ -142,7 +175,7 @@ void rDeviceUAVGrid::onInit()
 		}
 		if (_tool_type == TOOL_NONE)
 		{
-			_tprintf(_T("ERROR: rDeviceVCRGrid: tool type is not known. (system: %s, device: %s)\n"), _tool_robotName.c_str(), _tool_deviceName.c_str());
+			_tprintf(_T("ERROR: rDeviceUAVGrid: tool type is not known. (system: %s, device: %s)\n"), _tool_robotName.c_str(), _tool_deviceName.c_str());
 			enable(false);
 		}
 
@@ -168,8 +201,17 @@ void rDeviceUAVGrid::onInit()
 			_tool_width = 1.0f;
 	}
 
-	_cell_count = _cols * _rows;
-	_cell_count_occupied = 0;
+	_tool_deviceID_PTO = _rdc.m_deviceAPI->getDeviceID(_tool_robotName.c_str(), _tool_deviceName_PTO.c_str());
+	if (_tool_deviceID_PTO == INVALID_RID)
+	{
+		_tprintf(_T("ERROR: rDeviceUAVGrid: cannot find tool PTO. (system: %s, device: %s)\n"), _tool_robotName.c_str(), _tool_deviceName_PTO.c_str());
+		enable(false);
+	}
+
+	// maximum buffer size to read data once
+	prop = getProperty(_T("READ_SIZE_MAX"));
+	if (prop)
+		_read_size_max = min(_tstoi(prop), RDEVICEGRID_READSIZE_MAX);
 }
 
 void rDeviceUAVGrid::onTerminate()
@@ -221,12 +263,6 @@ int rDeviceUAVGrid::readDeviceValue(void* buffer, int len, int port)
 
 int rDeviceUAVGrid::writeDeviceValue(void* buffer, int len, int port)
 {
-	if (len == sizeof(int))
-	{
-		_tool_activated = *(int*)buffer == 0 ? false : true;
-		return sizeof(int);
-	}
-	
 	return 0;
 }
 
@@ -249,7 +285,7 @@ int rDeviceUAVGrid::monitorDeviceValue(void* buffer, int len, int port)
 	if (len == (int)(sizeof(int) * 2))
 	{ // read (occupied cell count , whole cell count)
 		_lock.lock();
-		((int*)buffer)[0] = _cell_count;
+		((int*)buffer)[0] = _cell_count_wa;
 		((int*)buffer)[1] = _cell_count_occupied;
 		_lock.unlock();
 		return len;
@@ -265,6 +301,8 @@ void rDeviceUAVGrid::importDevice(rTime time, void* mem)
 
 	_lock.lock();
 	{
+		_rdc.m_deviceAPI->readDeviceValue(_tool_deviceID_PTO, &_tool_activated, 1);
+
 		if (_tool_activated)
 		{
 			_rdc.m_deviceAPI->getBodyPosition(_tool_bodyID, r_w);
@@ -310,7 +348,8 @@ void rDeviceUAVGrid::Reset()
 {
 	//_read_offset = 0;
 	//_read_index = 0;
-	memset(_grid, 0, _cell_count);
+	for (int i = 0; i < _cell_count; i++)
+		_grid[i] &= 0xf0;
 	_cell_count_occupied = 0;
 }
 

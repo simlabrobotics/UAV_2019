@@ -25,7 +25,7 @@ public:
 	RD_DECLARE_initDevice;
 	RD_DECLARE_terminateDevice;
 	RD_DECLARE_writeDeviceValue;
-	RD_DECLARE_monitorDeviceValue;
+	RD_DECLARE_readDeviceValue;
 	RD_DECLARE_updateWriteValue;
 
 private:
@@ -42,6 +42,11 @@ private:
 	float _reduction_inv[RD_DOF_MAX];// inverse of gear reduction ratio (since kinematic motor v1.2)
 	unsigned short _dim;			 // joint dimension
 	bool _update_adj_kinematics;	 // whether to update adjacent kinematics
+	float _q_PTO_active[RD_DOF_MAX];	 // joint angle when PTO is active
+	float _q_PTO_deactive[RD_DOF_MAX];	 // joint angle when PTO is deactive
+
+private:
+	void _isActivated(char* state);
 };
 
 } // namespace plugin

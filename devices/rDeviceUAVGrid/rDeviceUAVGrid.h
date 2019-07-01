@@ -38,8 +38,10 @@ private:
 	string_type				_tool_robotName;
 	string_type				_tool_bodyName;
 	string_type				_tool_deviceName;
+	string_type				_tool_deviceName_PTO;
 	rID						_tool_bodyID;
 	rID						_tool_deviceID;
+	rID						_tool_deviceID_PTO;
 	HTransform				_tool_bodyHT;
 	HTransform				_tool_offset;
 	float					_tool_width;
@@ -48,15 +50,16 @@ private:
 		TOOL_LINE,
 	};
 	eTOOL_TYPE				_tool_type;
-	bool					_tool_activated;
+	char					_tool_activated;
 
 	int						_rows;
 	int						_cols;
 	int						_cell_count;
+	int						_cell_count_wa;
 	int						_cell_count_occupied;
 	float					_cell_size;
 
-	unsigned char			*_grid;
+	unsigned char			*_grid;		// 0x00:empty cell, 0x01:worked(occupied), 0x10:(not a work-area)
 
 	int						_read_offset;
 	int						_read_index;

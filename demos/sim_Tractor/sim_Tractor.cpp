@@ -59,7 +59,7 @@ float v_des = 0.0f; // desired velocity
 float theta_des = 0.0f; // desired steer angle
 const float V_INC = 0.27f;//0.01;
 const float THETA_INC = (float)(5.0);//degree
-float pto_des = 0.0f;
+char pto_des = 0;
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
@@ -153,8 +153,8 @@ void MyKeyboardHandler(int key, void* data)
 	case VK_RIGHT: theta_des += THETA_INC; break;
 	case VK_SPACE: v_des = 0; break;
 
-	case VK_PRIOR: pto_des = (float)(0 * DEGREE); break;
-	case VK_NEXT: pto_des = (float)(30 * DEGREE); break;
+	case VK_PRIOR: pto_des = 0; break;
+	case VK_NEXT: pto_des = 1; break;
 
 	case VK_T:
 //		rShowTrace(aml_name, _T("Body"), BLUE);
@@ -216,21 +216,19 @@ void MyControlCallback(rTime time, void* data)
 		rxDevice* pto = uav[uav_no]->findDevice(_T("PTO"));
 		if (pto)
 		{
-			float val;
-			val = pto_des;
-			pto->writeDeviceValue(&val, sizeof(val));
+			pto->writeDeviceValue(&pto_des, sizeof(pto_des));
 		}
 
-		rxSystem* WC = env->findSystem(appConf.emlWCName(uav_no));
+		/*rxSystem* WC = env->findSystem(appConf.emlWCName(uav_no));
 		if (WC)
 		{
 			rxDevice* wc = WC->findDevice(_T("WC"));
 			if (wc)
 			{
-				int activated = (pto_des > 0 ? 1 : 0);
+				int activated = (int)pto_des;
 				wc->writeDeviceValue(&activated, sizeof(int));
 			}
-		}
+		}*/
 	}
 
 	//if (env && env->findSystem(_T("Environment::WorkAreaCalc.aml")))
