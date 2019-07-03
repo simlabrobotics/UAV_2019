@@ -54,6 +54,8 @@ rDeviceUAVGrid::rDeviceUAVGrid()
 , _read_offset(0)
 , _read_size_max(RDEVICEGRID_READSIZE_MAX)
 {
+	for (int i = 0; i < 4; i++)
+		_work_area[i].index = 0;
 }
 
 rDeviceUAVGrid::~rDeviceUAVGrid()
@@ -118,8 +120,8 @@ void rDeviceUAVGrid::onInit()
 
 		for (int row = 0; row < _rows; row++) {
 			for (int col = 0; col < _cols; col++) {
-				float x = (float)((col - (int)(_cols * 0.5))) * _cell_size + (0.5 * _cell_size);
-				float y = (float)((row - (int)(_rows * 0.5))) * _cell_size + (0.5 * _cell_size);
+				float x = (float)((col - (int)(_cols * 0.5f))) * _cell_size + (0.5f * _cell_size);
+				float y = (float)((row - (int)(_rows * 0.5f))) * _cell_size + (0.5f * _cell_size);
 				float height;
 				hmap_wc.GetHeight(x, y, height);
 				if (height >= 0.5f)
@@ -272,7 +274,29 @@ int rDeviceUAVGrid::command(int cmd, int arg, void* udata, int port)
 	{
 	case UAVDRV_DATAPORT_RESET_WORK:
 	{
-		Reset();
+		_lock.lock();
+		{
+			_resetWork();
+		}
+		_lock.unlock();
+	}
+	break;
+
+	case UAVDRV_DATAPORT_SET_WORKAREA:
+	{
+		if (!udata)
+			break;
+
+		WORKAREAPOINT* pt = (WORKAREAPOINT*)udata;
+		if (pt->index < 1 || pt->index > 4)
+			break;
+
+		_lock.lock();
+		{
+			memcpy(&_work_area[pt->index - 1], pt, sizeof(WORKAREAPOINT));
+			_updateWorkArea();
+		}
+		_lock.unlock();
 	}
 	break;
 	}
@@ -344,13 +368,55 @@ void rDeviceUAVGrid::importDevice(rTime time, void* mem)
 	_lock.unlock();
 }
 
-void rDeviceUAVGrid::Reset()
+void rDeviceUAVGrid::_resetWork()
 {
 	//_read_offset = 0;
 	//_read_index = 0;
 	for (int i = 0; i < _cell_count; i++)
 		_grid[i] &= 0xf0;
 	_cell_count_occupied = 0;
+}
+
+void rDeviceUAVGrid::_updateWorkArea()
+{
+	// check if we have all work-area corners
+	for (int i = 0; i < 4; i++) {
+		if (_work_area[i].index != (i + 1))
+			return;
+	}
+
+	_cell_count_wa = 0;
+	_cell_count_occupied = 0;
+	
+	auto f = [&](float x1, float y1, float x2, float y2, float x, float y) -> bool {
+		float th = 1.0e-5;
+		return ((abs(x1 - x2) < th)
+			? (x < x1)
+			: (((y2 - y1) / (x2 - x1) * (x - x1) + y1 - y) > 0.0f));
+	};
+
+	for (int row = 0; row < _rows; row++) {
+		for (int col = 0; col < _cols; col++) {
+			float x = (float)((col - (int)(_cols * 0.5f))) * _cell_size + (0.5f * _cell_size);
+			float y = (float)((row - (int)(_rows * 0.5f))) * _cell_size + (0.5f * _cell_size);
+
+			bool w1 = f(_work_area[0].x, _work_area[0].y, _work_area[1].x, _work_area[1].y, x, y);
+			bool w2 = f(_work_area[2].x, _work_area[2].y, _work_area[3].x, _work_area[3].y, x, y);
+			bool w3 = f(_work_area[0].x, _work_area[0].y, _work_area[3].x, _work_area[3].y, x, y);
+			bool w4 = f(_work_area[1].x, _work_area[1].y, _work_area[2].x, _work_area[2].y, x, y);
+			bool wa = (w1 != w2) && (w3 != w4);
+
+			if (wa) {
+				_grid[row*_cols + col] &= 0x0f;
+				_cell_count_wa++;
+				if (_grid[row*_cols + col] & 0x0f)
+					_cell_count_occupied++;
+			}
+			else {
+				_grid[row*_cols + col] = 0x10;
+			}
+		}
+	}
 }
 
 } // namespace plugin

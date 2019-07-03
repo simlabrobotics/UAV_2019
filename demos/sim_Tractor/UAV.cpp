@@ -231,6 +231,17 @@ void UAV::onMessage(int id, kaiMsg &msg)
 	}
 	break;
 
+	case UAVP_SET_WORKAREA:
+	{
+		if (NULL != _wc)
+		{
+			WORKAREAPOINT pt;
+			memcpy(&pt, (char*)msg.buffer() + Size_kaiHEADER, sizeof(WORKAREAPOINT));
+			_wc->command(UAVDRV_DATAPORT_SET_WORKAREA, 0, (void*)&pt);
+		}
+	}
+	break;
+
 	case UAVP_REQ_SLIP_ANGLE:
 	{
 		kaiSocket* client = findClient(id);

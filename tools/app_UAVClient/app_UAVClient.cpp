@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 	printf("\'R\' or \'r\': lift up PTO\n");
 	printf("\'F\' or \'f\': let down PTO\n");
 	printf("\n");
+	printf("\'M\' or \'m\': reset work area\n");
 	printf("\'P\' or \'p\': reset path\n");
 	printf("\'O\' or \'o\': reset work statistics\n");
 	printf("\'I\' or \'i\': reset vehicle pose\n");
@@ -123,6 +124,11 @@ int main(int argc, char *argv[])
 					break;
 				case 'f': case 'F':
 					client.sendMovePTO(1);
+					break;
+
+				// reset work-area
+				case 'm': case 'M':
+					client.resetWorkArea();
 					break;
 
 				// reset path

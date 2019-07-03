@@ -65,7 +65,6 @@ void rGraphicsUAVGrid::onCreate(double dTime)
 	float hmap_map_length;
 	float hmap_map_height_min;
 	float hmap_map_height_max;
-	string_type hmap_path_wa;
 	
 	prop = getProperty(_T("CELL_SIZE")); _cell_size = (float)_tstof(prop);
 	prop = getProperty(_T("GRID_HEIGHT")); _grid_coord_z = (float)_tstof(prop);
@@ -83,17 +82,12 @@ void rGraphicsUAVGrid::onCreate(double dTime)
 	prop = getProperty(_T("HMAP_L")); hmap_map_length = (float)_tstof(prop);
 	prop = getProperty(_T("HMAP_H_min")); hmap_map_height_min = (float)_tstof(prop);
 	prop = getProperty(_T("HMAP_H_max")); hmap_map_height_max = (float)_tstof(prop);
-	prop = getProperty(_T("HMAP_PATH_WA")); if (prop) hmap_path_wa = prop;
 
 	// initiate height map
 	if (!_hmap.Create(hmap_path, hmap_map_width, hmap_map_length, hmap_map_height_min, hmap_map_height_max))
 	{
 		assert(0 && "ERROR! rGraphicsUAVGrid: failed to load height map.\n");
 	}
-	/*if (!_hmap_wa.Create(hmap_path_wa, hmap_map_width, hmap_map_length, hmap_map_height_min, hmap_map_height_max))
-	{
-		assert(0 && "ERROR! rGraphicsUAVGrid: failed to load work-area map.\n");
-	}*/
 
 	if (_cols > 0 && _rows > 0)
 	{

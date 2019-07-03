@@ -9,6 +9,7 @@
 
 #include <rlab/device/rDeviceBase.h>
 #include <rlab/math/rmath.h>
+#include "UAV_def.h"
 
 #define GRIDDATA 10
 
@@ -65,8 +66,11 @@ private:
 	int						_read_index;
 	int						_read_size_max;
 
+	WORKAREAPOINT			_work_area[4];
+
 private:
-	void					Reset();
+	void					_resetWork();
+	void					_updateWorkArea();
 };
 
 } // namespace plugin

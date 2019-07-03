@@ -164,6 +164,14 @@ Reset working coverage data.
 */
 #define UAVP_RESET_COVERAGE				(24)
 
+/******************************************************************************
+Set work area.
+@arg1 work-area corner index (1, 2, 3, or 4)
+@arg2 x coordinate in meter
+@arg3 y coordinate in meter
+*/
+#define UAVP_SET_WORKAREA				(26)
+
 
 /******************************************************************************
  Set parameter

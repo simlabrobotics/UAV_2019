@@ -81,6 +81,14 @@ typedef struct sWorkCoverage
 	float			reserved_1;
 } WORKCOVERAGE;
 
+typedef struct sWorkAreaPoint
+{
+	int				index;
+	float			x;
+	float			y;
+	float			reserved;
+} WORKAREAPOINT;
+
 typedef struct sParameter
 {
 	int				type;

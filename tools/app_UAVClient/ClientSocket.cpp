@@ -50,6 +50,37 @@ void CClientSocket::sendMovePTO(int down)
 	send(*_msgSend);
 }
 
+void CClientSocket::resetWorkArea()
+{
+	if (!_msgSend) {
+		_msgSend = new kaiMsg();
+		_msgSend->allocateMemory();
+	}
+
+	WORKAREAPOINT pt[4];
+	pt[0].index = 1;
+	pt[0].x = -10;
+	pt[0].y = -5;
+	pt[1].index = 2;
+	pt[1].x = 5;
+	pt[1].y = -10;
+	pt[2].index = 3;
+	pt[2].x = 10;
+	pt[2].y = 5;
+	pt[3].index = 4;
+	pt[3].x = -5;
+	pt[3].y = 10;
+
+	for (int i = 0; i < 4; i++) {
+		_msgSend->reset();
+		_msgSend->id(UAVP_SET_WORKAREA);
+		_msgSend->begin();
+		_msgSend->writeData(&pt[i], sizeof(WORKAREAPOINT));
+		_msgSend->end();
+		send(*_msgSend);
+	}
+}
+
 void CClientSocket::resetPath()
 {
 	if (!_msgSend) {

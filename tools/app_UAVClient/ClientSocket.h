@@ -17,6 +17,7 @@ public:
 
 	void sendVelocity(float v1, float v2);
 	void sendMovePTO(int down);
+	void resetWorkArea();
 	void resetPath();
 	void resetCoverage();
 	void resetPose();
