@@ -617,6 +617,8 @@ void UAV::datanamesSlipPlot(std::vector<string_type>& datanames, int channel)
 	datanames.push_back(_name + string_type(_T(".steer angle(deg)")));
 	datanames.push_back(_name + string_type(_T(".velocity(m/s)")));
 	datanames.push_back(_name + string_type(_T(".lateral velocity(m/s)")));
+	datanames.push_back(_name + string_type(_T(".target steer angle(deg)")));
+	datanames.push_back(_name + string_type(_T(".target velocity(m/s)")));
 }
 
 void UAV::datanamesSlipPlotTracked(std::vector<string_type>& datanames, int channel)
@@ -741,7 +743,7 @@ void UAV::collectAccData(std::vector<double>& data, int channel)
 
 void UAV::collectSlipData(std::vector<double>& data, int channel)
 {
-	float val[3];
+	float val[5];
 
 	if (_drive && _drive->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_SLIP_ANGLE) > 0)
 	{
@@ -769,11 +771,13 @@ void UAV::collectSlipData(std::vector<double>& data, int channel)
 		data.push_back(nil);
 	}
 
-	if (_drive && _drive->monitorDeviceValue(val, sizeof(float) * 3, UAVDRV_MONITORPORT_POSE_LOCAL) > 0)
+	if (_drive && _drive->monitorDeviceValue(val, sizeof(float) * 5, UAVDRV_MONITORPORT_POSE_LOCAL) > 0)
 	{
 		data.push_back(val[0] * RADIAN); // steer angle
 		data.push_back(val[1]);  // current forward(longitudinal) velocity
 		data.push_back(val[2]);  // current lateral velocity
+		data.push_back(val[3] * RADIAN); // target steer angle
+		data.push_back(val[4]);  // target forward velocity
 	}
 	else
 	{

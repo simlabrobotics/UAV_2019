@@ -62,14 +62,39 @@ int main(int argc, char *argv[])
 	printf("---------------------------------------------\n");
 	printf("\'C\' or \'c\': request coverage statistics\n");
 	printf("\'K\' or \'k\': request indicators\n");
+	printf("---------------------------------------------\n");
+	printf("\'1\' : steer demo\n");
+	printf("\'0\' : demo off\n");
 	printf("*********************************************\n");
 
 	bool bRun = true;
+	
+	char cDemo = 0;
+	double dT = 0.005;
+	double curT = 0;
+	double freq = 0.05;
+
 	while (bRun) {
 		if (!_kbhit()) {
-			/// send data here
-			client.sendVelocity(v_des, theta_des);
-			client.recv();
+			switch (cDemo)
+			{
+			case 1:
+			{
+				double steer_angle = 50.0 * sin(2 * 3.14 * freq * curT); // degree
+				client.sendVelocity(0.0, steer_angle);
+				curT += dT;
+			}
+			break;
+
+			case 0:
+			default:
+			{
+				client.sendVelocity(v_des, theta_des);
+				client.recv();
+			}
+			break;
+			}
+			
 			Sleep(5);
 		}
 		else {
@@ -125,6 +150,12 @@ int main(int argc, char *argv[])
 					client.reqIndicators();
 					break;
 
+				// demo motion
+				case '1':
+				case '0':
+					cDemo = c - '0';
+					break;
+				
 				case 'q': case 'Q':
 					bRun = false;
 					break;

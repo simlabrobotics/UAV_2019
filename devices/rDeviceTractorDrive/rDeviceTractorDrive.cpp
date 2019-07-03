@@ -445,7 +445,34 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 
 	case UAVDRV_MONITORPORT_POSE_LOCAL:
 	{
-		if (len >= 3 * sizeof(float))
+		if (len >= 5 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				float* value = (float*)buffer;
+				value[0] = _theta;
+				value[1] = _vx;
+				value[2] = _vy;
+				value[3] = _theta_des;
+				value[4] = _v_des;
+			}
+			_lock.unlock();
+			return 5 * sizeof(float);
+		}
+		else if (len >= 4 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				float* value = (float*)buffer;
+				value[0] = _theta;
+				value[1] = _v;
+				value[2] = _theta_des;
+				value[3] = _v_des;
+			}
+			_lock.unlock();
+			return 4 * sizeof(float);
+		}
+		else if (len >= 3 * sizeof(float))
 		{
 			_lock.lock();
 			{
