@@ -30,3 +30,10 @@ make_example_plugin(
 	${name}
 	# Dependencies
 	)
+
+#---------------------------------------------
+# Install device drivers:
+#---------------------------------------------
+install(TARGETS "${name}"
+	RUNTIME DESTINATION ${RLAB_INSTALL_PREFIX}bin/models/devices/
+	)

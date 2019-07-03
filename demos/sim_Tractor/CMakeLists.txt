@@ -102,3 +102,9 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/bin/"
 #   FILES_MATCHING PATTERN "*.h"
 	PATTERN ".svn" EXCLUDE
 	)
+#---------------------------------------------
+# Install executable:
+#---------------------------------------------
+install(TARGETS "${name}"
+	RUNTIME DESTINATION ${RLAB_INSTALL_PREFIX}bin/
+	)
