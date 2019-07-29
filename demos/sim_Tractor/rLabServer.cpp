@@ -8,6 +8,8 @@
 
 static void dumpMessage(kaiMsg& msg, const char* dec)
 {
+	return;
+
 	float arg[4];
 	memcpy(arg, (char*)msg.buffer() + Size_kaiHEADER, sizeof(float)*4);
 	printf("%s[id=%02d]", dec, msg.id());
