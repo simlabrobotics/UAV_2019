@@ -887,6 +887,7 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		float s = sin(_psi);
 		float height;
 		_hmap.GetHeight(_x, _y, height);
+		_z = _r0[2] + height;
 
 		_R[0] = c;
 		_R[1] = -s;
@@ -894,9 +895,8 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		_R[4] = c;
 		_r[0] = _x;
 		_r[1] = _y;
-		//_r[2] = _z;
-		_r[2] = height + _r0[2];
-
+		_r[2] = _z;
+		
 		// set model(base body) transformation
 		//    T_G_V = T_G_C ^ T_V_C^-1
 		// it leads to,
