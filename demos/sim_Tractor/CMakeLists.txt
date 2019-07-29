@@ -54,6 +54,7 @@ LIST(APPEND ${name}_EXTRA_SRCS
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/wheel_motor.dml"
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/WorkArea1.dml"
 	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/WorkArea2.dml"
+	"${CMAKE_SOURCE_DIR}/bin/models/Mobile/Tractor/devices/HMAP_param.dml"
 	)
 LIST(APPEND ${name}_EXTRA_SRCS_NAME
 	"UAV Header"
@@ -65,6 +66,7 @@ LIST(APPEND ${name}_EXTRA_SRCS_NAME
 	"HeightMap"
 	"XDL"
 	"XDL"
+	"DML"
 	"DML"
 	"DML"
 	"DML"
