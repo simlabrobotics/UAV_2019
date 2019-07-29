@@ -446,6 +446,9 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 	case UAVP_REQ_INDICATORS:
 	{
+		PARAMETER param;
+		memcpy(&param, (char*)msg.buffer() + Size_kaiHEADER, sizeof(PARAMETER));
+
 		kaiSocket* client = findClient(id);
 		if (!client) break;
 		kaiMsg feedback;
@@ -455,30 +458,12 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		if (NULL != _drive)
 		{
-			float val[2];
-
-			if (0 < _drive->monitorDeviceValue(val, sizeof(float) * 2, UAVDRV_MONITORPORT_TRACTIVE_FORCE))
-				feedback << val[0] << val[1];
+			if (0 < _drive->monitorDeviceValue(&param, sizeof(PARAMETER), UAVDRV_MONITORPORT_INDICATOR))
+				feedback << param.type << param.param1 << param.param2 << param.param3;
 			else
 			{
 				float nil(0.0f);
-				feedback << nil << nil;
-			}
-
-			if (0 < _drive->monitorDeviceValue(val, sizeof(float), UAVDRV_MONITORPORT_SINKAGE))
-				feedback << val[0];
-			else
-			{
-				float nil(0.0f);
-				feedback << nil;
-			}
-
-			if (_drive->monitorDeviceValue(val, sizeof(float), UAVDRV_MONITORPORT_MOTION_RESISTANCE))
-				feedback << val[0];
-			else
-			{
-				float nil(0.0f);
-				feedback << nil;
+				feedback << nil << nil << nil << nil;
 			}
 		}
 		else

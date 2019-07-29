@@ -147,6 +147,11 @@ enum eParamType
 	PTYPE_C_ratio_of_terrain_deformation = 292,
 };
 
+enum eIndicatorType
+{
+	ITYPE_C_slope_acc = 257,
+};
+
 #define HMAP_SIZE_MAX (1024*1024)
 
 typedef struct sHeightMap

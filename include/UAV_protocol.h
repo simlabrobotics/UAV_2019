@@ -246,14 +246,17 @@ Set work area.
 
 /******************************************************************************
  Request indicator values
+ @arg1 indicator type
+	In case of car-like vehicle,
+		1: acceleration due to slope
  */
 #define UAVP_REQ_INDICATORS				(104)
 /**
  Acknowledge indicators.
- @arg1 tractive force of left track in N
- @arg2 tractive force of right track in N
- @arg3 sinkage in meter
- @arg4 motion resistance due to compaction in kN
+ @arg1 parameter type (see definition of UAVP_REQ_INDICATORS)
+ @arg2 indicator value 1
+ @arg3 indicator value 2
+ @arg4 indicator value 3
 */
 #define UAVP_ACK_INDICATORS				(105)
 

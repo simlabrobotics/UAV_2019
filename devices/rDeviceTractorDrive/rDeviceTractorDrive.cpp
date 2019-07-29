@@ -565,8 +565,6 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-
-
 	case UAVDRV_MONITORPORT_PARAMETER:
 	{
 		if (len >= 4 * sizeof(float))
@@ -665,8 +663,27 @@ int rDeviceTractorDrive::monitorDeviceValue(void* buffer, int len, int port)
 	}
 	break;
 
-
-
+	case UAVDRV_MONITORPORT_INDICATOR:
+	{
+		if (len >= 4 * sizeof(float))
+		{
+			_lock.lock();
+			{
+				int *ivalue = (int*)buffer;
+				float *fvalue = (float*)buffer;
+				switch (ivalue[0])
+				{
+				case ITYPE_C_slope_acc:
+					fvalue[1] = _ax_slope;
+					fvalue[2] = _ay_slope;
+					break;
+				}
+			}
+			_lock.unlock();
+			return 4 * sizeof(float);
+		}
+	}
+	break;
 
 	default:
 		// Exception! Unknown data port.
