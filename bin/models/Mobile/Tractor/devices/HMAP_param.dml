@@ -3,7 +3,7 @@
 
   <credit address="" creator="" date="" description="" email=""/>
 
-  <specification byte="0" period="4294967295" physics="rDeviceParameter.rdd">
+  <specification byte="0" period="1000000" physics="..\..\..\devices\rDeviceParameter.rdd">
     <property name="HMAP_H_max" value="10"/>
     <property name="HMAP_H_min" value="-10"/>
     <property name="HMAP_L" value="100"/>

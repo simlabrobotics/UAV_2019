@@ -6,6 +6,8 @@
   <specification byte="1" period="1000" physics="..\..\..\devices\rDeviceTractorDrive.rdd">
     <property name="Cf" value="72900"/>
     <property name="Cr" value="45464"/>
+    <property name="HMAP_PARAM_SYS" value="Environment::Terrain.aml"/>
+    <property name="HMAP_PARAM_DEV" value="HMAP_param"/>
     <property name="HMAP_H_max" value="10"/>
     <property name="HMAP_H_min" value="-10"/>
     <property name="HMAP_L" value="100"/>
@@ -50,6 +52,7 @@
     <property name="ratio_of_terrain_deformation(K_sign)" value="0.0000378"/>
     <property name="velocity_threshold_to_apply_slopeslip_f(v_th_slopeslip_f|m/s)" value="0.3"/>
     <property name="velocity_threshold_to_apply_slopeslip_b(v_th_slopeslip_b|m/s)" value="-0.3"/>
+    <property name="apply_slope_slip" value="true"/>
   </specification>
 
 </Device>

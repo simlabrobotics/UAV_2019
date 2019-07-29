@@ -13,6 +13,8 @@
     <property name="GRID_VISIBLE" value="false"/>
     <property name="GRID_VISIBLE_NORMAL" value="false"/>
     <property name="GRID_VISIBLE_OCCUPIED" value="true"/>
+    <property name="HMAP_PARAM_SYS" value="Environment::Terrain.aml"/>
+    <property name="HMAP_PARAM_DEV" value="HMAP_param"/>
     <property name="HMAP_H_max" value="10"/>
     <property name="HMAP_H_min" value="-10"/>
     <property name="HMAP_L" value="100"/>
