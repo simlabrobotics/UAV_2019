@@ -75,15 +75,12 @@ void rGraphicsUAVWaypoints::onCreate(double dTime)
 		assert(0 && "ERROR! rGraphicsUAVWaypoints: failed to load height map.\n");
 	}
 
-
-
 /*
 	_wp_count = 3;
 		
 	// index/vertex array to draw waypoints.
 	_indexArray = new int[_wp_count];
 	_vertexArray = new float[_wp_count*3];
-
 
 	_vertexArray[0] = 0.0;
 	_vertexArray[1] = 3.0;
@@ -227,6 +224,19 @@ void rGraphicsUAVWaypoints::onDevice(double dTime, DWORD dSize, BYTE* dData)
 
 			// move on to the next waypoint:
 			pwp++;
+		}
+
+		if (_hPath < 0) {
+			_hPath = makeMesh();
+			setVertexArray(_hPath, _vertexArray, _wp_count);
+			setVertexIndices(_hPath, _indexArray, _wp_count);
+			setColorArray(_hPath, _wp_color, 1);
+			setColorBinding(_hPath, rGraphicsAPI::BIND_OVERALL);
+			enableLighting(_hPath, false);
+			setMode(_hPath, rGraphicsAPI::LINE_STRIP);
+			setColor(_hPath, _line_color[0], _line_color[1], _line_color[2], _line_color[3]);
+			setLineWidth(_hPath, _line_width);
+			show(_hPath, true);
 		}
 	}
 }

@@ -130,7 +130,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_GET_SENSORS);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_GET_SENSORS) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_GET_SENSORS) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -217,7 +217,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_COVERAGE);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_COVERAGE) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_COVERAGE) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -273,7 +273,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_SLIP_ANGLE);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_SLIP_ANGLE) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_SLIP_ANGLE) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -304,7 +304,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_GPS);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_GPS) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_GPS) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -354,7 +354,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_IMU);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_IMU) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_IMU) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -396,7 +396,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_VEHICLE_STATUS);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_VEHICLE_STATUS) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_VEHICLE_STATUS) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -439,7 +439,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_PARAMETER);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_PARAMETER) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_PARAMETER) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;
@@ -462,7 +462,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 			else
 			{
 				float nil(0.0f);
-				feedback << nil << nil << nil << nil;
+				feedback << nil << nil;
 			}
 
 			if (0 < _drive->monitorDeviceValue(val, sizeof(float), UAVDRV_MONITORPORT_SINKAGE))
@@ -470,7 +470,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 			else
 			{
 				float nil(0.0f);
-				feedback << nil << nil << nil << nil;
+				feedback << nil;
 			}
 
 			if (_drive->monitorDeviceValue(val, sizeof(float), UAVDRV_MONITORPORT_MOTION_RESISTANCE))
@@ -478,7 +478,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 			else
 			{
 				float nil(0.0f);
-				feedback << nil << nil << nil << nil;
+				feedback << nil;
 			}
 		}
 		else
@@ -489,7 +489,7 @@ void UAV::onMessage(int id, kaiMsg &msg)
 
 		feedback.id(UAVP_ACK_INDICATORS);
 		feedback.end();
-		assert(feedback.size() == 16 && "rLabServer> WARNING! Message(UAVP_ACK_INDICATORS) size is not 16 bytes.\n");
+		assert(feedback.size() == 16 && "UAV> WARNING! Message(UAVP_ACK_INDICATORS) size is not 16 bytes.\n");
 		client->send(feedback);
 	}
 	break;

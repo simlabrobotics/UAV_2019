@@ -128,6 +128,7 @@ private:
 	float	_v_threshod_to_apply_slippage_b;
 
 	// model parameters to calculate slippage wrt soil deformation (2019/06)
+	bool	_apply_slope_slip; // whether or not to apply slip due to slope
 	float	_tire_r;	// radius of tire
 	float	_tire_b;	// initial contact length of tire
 	float	_tire_w;	// contact width of tire

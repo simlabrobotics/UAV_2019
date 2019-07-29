@@ -151,6 +151,7 @@ rDeviceTractorDrive::rDeviceTractorDrive()
 	, _Ff(0), _Fr(0)
 	, _hmap_normal_window_size(1)
 	, _ax_slope(0), _ay_slope(0)
+	, _apply_slope_slip(false)
 {
 	sample_init();
 }
@@ -846,8 +847,8 @@ void rDeviceTractorDrive::exportDevice(rTime time, void* mem)
 		// calcurate slippage due to soid deformation wrt vehicle pose,
 		// and apply it to update vehicle position
 		//
-		if (_v >= _v_threshod_to_apply_slopeslip_f ||
-			_v <= _v_threshod_to_apply_slopeslip_b)
+		if (_apply_slope_slip &&
+			(_v >= _v_threshod_to_apply_slopeslip_f || _v <= _v_threshod_to_apply_slopeslip_b))
 		{
 			float k_sign = (sample_uniform01() > (_K_sign * _m) ? 1 : -1);
 			float slope_slip_ratio = sample_quasi_normal(_s_mean, _s_std);
@@ -1045,6 +1046,7 @@ void rDeviceTractorDrive::InitParams()
 	READ_PROP_REAL(_T("gravitational_acc(g|m/s^2)"), _g, 1.0f);
 	
 	// soil deformation
+	READ_PROP_BOOLEAN(_T("apply_slope_slip"), _apply_slope_slip, false);
 	READ_PROP_REAL(_T("soil_adhesiveness(c|Pa)"), _c, 1.0f);
 	READ_PROP_REAL(_T("internal_shearing_resistance(pi|deg)"), _pi, 1.0f);
 	_pi *= DEGREE;
@@ -1070,6 +1072,30 @@ void rDeviceTractorDrive::InitHeightMap()
 	float hmap_map_height_min = 0.0f;
 	float hmap_map_height_max = 0.0f;
 
+	/*string_type hmap_param_sys = _T("");
+	string_type hmap_param_dev = _T("");
+	rID hmap_param;
+	TCHAR hmap_prop[1024];
+	prop = getProperty(_T("HMAP_PARAM_SYS")); if (prop) hmap_param_sys = prop;
+	prop = getProperty(_T("HMAP_PARAM_DEV")); if (prop) hmap_param_dev = prop;
+	hmap_param = _rdc.m_deviceAPI->getDeviceID(hmap_param_sys.c_str(), hmap_param_dev.c_str());
+	if (hmap_param == INVALID_RID)
+	{
+		assert(0 && "ERROR! rDeviceTractorDrive: failed to load height map device param.\n");
+	}
+	if (_rdc.m_deviceAPI->getDeviceProperty(hmap_param, _T("HMAP_PATH"), hmap_prop))
+		hmap_path = hmap_prop;
+	if (_rdc.m_deviceAPI->getDeviceProperty(hmap_param, _T("HMAP_W"), hmap_prop))
+		hmap_map_width = (float)_tstof(hmap_prop);
+	if (_rdc.m_deviceAPI->getDeviceProperty(hmap_param, _T("HMAP_L"), hmap_prop))
+		hmap_map_length = (float)_tstof(hmap_prop);
+	if (_rdc.m_deviceAPI->getDeviceProperty(hmap_param, _T("HMAP_H_min"), hmap_prop))
+		hmap_map_height_min = (float)_tstof(hmap_prop);
+	if (_rdc.m_deviceAPI->getDeviceProperty(hmap_param, _T("HMAP_H_max"), hmap_prop))
+		hmap_map_height_max = (float)_tstof(hmap_prop);
+	if (_rdc.m_deviceAPI->getDeviceProperty(hmap_param, _T("HMAP_PATHHMAP_NORMAL_WND_SIZE"), hmap_prop))
+		_hmap_normal_window_size = _tstoi(hmap_prop);*/
+	
 	prop = getProperty(_T("HMAP_PATH")); if (prop) hmap_path = prop;
 	prop = getProperty(_T("HMAP_W")); if (prop) hmap_map_width = (float)_tstof(prop);
 	prop = getProperty(_T("HMAP_L")); if (prop) hmap_map_length = (float)_tstof(prop);

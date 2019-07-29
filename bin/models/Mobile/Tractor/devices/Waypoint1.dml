@@ -4,6 +4,8 @@
   <credit address="www.wonikrobotics.com" creator="Sean Yi" date="2017/8/16" description="Display waypoints on the map" email="seanyi@wonikrobotics.com"/>
 
   <specification byte="4" graphics="..\..\..\devices\rGraphicsUAVWaypoints.rgd" period="1000000" physics="..\..\..\devices\rDeviceUAVWaypoints.rdd">
+    <property name="HMAP_PARAM_SYS" value="Environment::Terrain.aml"/>
+    <property name="HMAP_PARAM_DEV" value="HMAP_param"/>
     <property name="HMAP_H_max" value="10"/>
     <property name="HMAP_H_min" value="-10"/>
     <property name="HMAP_L" value="100"/>
