@@ -520,13 +520,18 @@ void PrintInstruction()
 	_tprintf(_T("Copyright (C) Wonik Robotics. All rights reserved.\n"));
 	_tprintf(_T("\n"));
 	_tprintf(_T("Instructions:\n"));
-	_tprintf(_T("\tUP arrow: increase velocity.\n"));
-	_tprintf(_T("\tDOWN arrow: decrease velocity.\n"));
-	_tprintf(_T("\tLEFT arrow: increase angular velocity in CCW direction.\n"));
-	_tprintf(_T("\tRIGHT arrow: increase angular velocity in CW direction.\n"));
-	_tprintf(_T("\tSpace-bar: stop.\n"));
-	_tprintf(_T("\tPAGE UP: lift up PTO.\n"));
-	_tprintf(_T("\tPAGE DOWN: lay down PTO.\n"));
+	if (appConf.enableDebugControlLocal()) {
+		_tprintf(_T("\tUP arrow: increase velocity.\n"));
+		_tprintf(_T("\tDOWN arrow: decrease velocity.\n"));
+		_tprintf(_T("\tLEFT arrow: increase angular velocity in CCW direction.\n"));
+		_tprintf(_T("\tRIGHT arrow: increase angular velocity in CW direction.\n"));
+		_tprintf(_T("\tSpace-bar: stop.\n"));
+		_tprintf(_T("\tPAGE UP: lift up PTO.\n"));
+		_tprintf(_T("\tPAGE DOWN: lay down PTO.\n"));
+	}
+	else {
+		_tprintf(_T("\tNetwork control ONLY !!!\n"));
+	}
 	_tprintf(_T("\tT: show trace of the vehicle.\n"));
 	//_tprintf(_T("\tTAB: start/pause simulation.\n"));
 	_tprintf(_T("\tQ: quit this program.\n"));

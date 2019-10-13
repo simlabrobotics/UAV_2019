@@ -17,6 +17,7 @@ public:
 	virtual void onMessage(int id, kaiMsg &msg);
 
 private:
+	int _loop_count;
 	int _recv_count;
 	int _send_count;
 };

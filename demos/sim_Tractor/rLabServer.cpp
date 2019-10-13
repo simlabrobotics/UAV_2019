@@ -24,6 +24,7 @@ static void dumpMessage(kaiMsg& msg, const char* dec)
 
 rLabServer::rLabServer()
 	: kaiServer()
+	, _loop_count(0)
 	, _recv_count(0)
 	, _send_count(0)
 {
@@ -31,7 +32,9 @@ rLabServer::rLabServer()
 
 void rLabServer::onMessage(int id, kaiMsg &msg)
 {
-	if ((++_recv_count) % 1000 == 0)
+	_loop_count++;
+	_recv_count++;
+	if ((_recv_count % 1000) == 0)
 	{
 		printf("rLabServer> %d commands received.\n", _recv_count);
 	}
@@ -45,6 +48,7 @@ void rLabServer::onAccept(int id)
 	if (client)
 	{
 		printf(">> New controller(%d) is connected.\n", id);
+		client->setBlockingMode(kaiNON_BLOCKING_SOCKET);
 	}
 }
 

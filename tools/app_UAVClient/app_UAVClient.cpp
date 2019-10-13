@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 		printf("ERROR: FAIL TO CONNECT TO SIMULATOR !\n");
 		goto __finish;
 	}
+	client.setBlockingMode(kaiNON_BLOCKING_SOCKET);
 
 	printf("*****************INSTRUCTION*****************\n");
 	printf("\'Q\' or \'q\': quit this program\n");
@@ -91,11 +92,11 @@ int main(int argc, char *argv[])
 			default:
 			{
 				client.sendVelocity(v_des, theta_des);
-				client.recv();
 			}
 			break;
 			}
-			
+
+			client.recv();
 			Sleep(5);
 		}
 		else {
